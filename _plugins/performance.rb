@@ -41,7 +41,7 @@ module Jekyll
       text = body.gsub(SCRIPT_BLOCK, '') # testo senza script, per cercare la matematica
 
       # Icone: si tolgono i CSS di Academicons e scholar-icons se la pagina non ne usa le classi (FontAwesome resta: serve a tutte le pagine).
-      out = out.sub(/(<head.*?<\/head>)/m) { |h| h.gsub(%r{<link\b[^>]*?(?:academicons|scholar-icons)[^>]*>[ \t]*\r?\n?}m, '') } unless body =~ /\bai ai-|\bai-|scholar-icon/
+      out = out.sub(/(<head.*?<\/head>)/m) { |h| h.gsub(%r{<link\b[^>]*?(?:academicons|scholar-icons)[^>]*>[ \t]*\r?\n?}m, '') } unless body =~ /class="(?:[^"]*\s)?ai-[a-z0-9]|class="(?:[^"]*\s)?scholar-icon/
 
       # MathJax (+ sua configurazione): solo se c'e' matematica o se la pagina lo chiede con `math: true`.
       unless item.data['math'] || text =~ MATH_TEXT || body =~ MATH_TAG
@@ -66,6 +66,13 @@ module Jekyll
           %(<link rel="stylesheet" href="#{href}" media="print" onload="this.media='all'">\n<noscript><link rel="stylesheet" href="#{href}"></noscript>)
       end
       out = out.sub(/(<head(?:\s[^>]*)?>)/) { "#{Regexp.last_match(1)}\n<link rel=\"preconnect\" href=\"https://cdn.jsdelivr.net\" crossorigin>" } if out.include?('cdn.jsdelivr.net')
+
+      # Font Awesome in LOCALE (assets/vendor/fontawesome): nessuna connessione a jsdelivr nel percorso critico del rendering.
+      # Se la cartella non esiste resta il CDN del tema (nessun rischio di pagina senza icone).
+      if File.exist?(File.join(item.site.source, 'assets/vendor/fontawesome/css/all.min.css'))
+        fa = "#{item.site.config['baseurl']}/assets/vendor/fontawesome/css/all.min.css"
+        out = out.sub(%r{<link\b[^>]*?fontawesome-free[^>]*>}m) { %(<link rel="stylesheet" href="#{fa}">) }
+      end
 
       item.output = out
     end
