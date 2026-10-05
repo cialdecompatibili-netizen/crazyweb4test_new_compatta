@@ -62,6 +62,12 @@ module Jekyll
       # `defer` sul <link> non esiste in HTML: il CSS bloccava comunque il disegno della pagina.
       out = out.sub(FONT_LINK) do
         href = Regexp.last_match(1)
+        # Roboto in LOCALE (assets/fonts, generato da _tools/self_host_roboto.py): niente host di Google, il font arriva col CSS
+        # e il testo non cambia carattere dopo il primo disegno (niente salto di layout / CLS). Se i file mancano, resta Google Fonts.
+        if href.include?('family=Roboto') && File.exist?(File.join(item.site.source, 'assets/fonts/roboto.css'))
+          bu = item.site.config['baseurl']
+          next %(<link rel="preload" href="#{bu}/assets/fonts/roboto-latin.woff2" as="font" type="font/woff2" crossorigin>\n<link rel="stylesheet" href="#{bu}/assets/fonts/roboto.css">)
+        end
         %(<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n) +
           %(<link rel="stylesheet" href="#{href}" media="print" onload="this.media='all'">\n<noscript><link rel="stylesheet" href="#{href}"></noscript>)
       end
