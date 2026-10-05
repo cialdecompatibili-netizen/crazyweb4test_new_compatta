@@ -71,8 +71,26 @@ module Jekyll
       # Se la cartella non esiste resta il CDN del tema (nessun rischio di pagina senza icone).
       if File.exist?(File.join(item.site.source, 'assets/fontawesome/css/all.min.css'))
         fa = "#{item.site.config['baseurl']}/assets/fontawesome/css/all.min.css"
-        out = out.sub(%r{<link\b[^>]*?fontawesome-free[^>]*>}m) { %(<link rel="stylesheet" href="#{fa}">) }
+        fa_font = "#{item.site.config['baseurl']}/assets/fontawesome/webfonts/fa-solid-900.woff2"
+        # preload del font delle icone: parte subito, senza aspettare che il CSS lo scopra (accorcia la catena CSS -> font)
+        out = out.sub(%r{<link\b[^>]*?fontawesome-free[^>]*>}m) do
+          %(<link rel="preload" href="#{fa_font}" as="font" type="font/woff2" crossorigin>\n<link rel="stylesheet" href="#{fa}">)
+        end
       end
+
+      # Script jsdelivr del tema (back-to-top, medium-zoom, masonry, imagesloaded) -> copie locali in assets/cdn-locale/.
+      # Se il file locale non esiste il tag resta com'e' (nessun rischio di pagina rotta). Senza integrity/crossorigin: ora e' stessa origine.
+      out = out.gsub(%r{<script\b([^>]*?)\ssrc="https://cdn\.jsdelivr\.net/npm/[^"]*/([^"/]+\.js)"([^>]*)>}m) do
+        md = Regexp.last_match
+        if File.exist?(File.join(item.site.source, 'assets/cdn-locale', md[2]))
+          rest = (md[1] + md[3]).gsub(/\sintegrity="[^"]*"/, '').gsub(/\scrossorigin(?:="[^"]*")?/, '')
+          %(<script#{rest} src="#{item.site.config['baseurl']}/assets/cdn-locale/#{md[2]}">)
+        else
+          md[0]
+        end
+      end
+      # se non resta piu' nessuna risorsa da jsdelivr, il preconnect non serve
+      out = out.sub(%r{\n?<link rel="preconnect" href="https://cdn\.jsdelivr\.net" crossorigin>}, '') unless out.scan('cdn.jsdelivr.net').size > 1
 
       item.output = out
     end
