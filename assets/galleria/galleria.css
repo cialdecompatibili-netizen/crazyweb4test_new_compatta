@@ -1,0 +1,21 @@
+/* Gallerie foto (_includes/galleria.liquid). Nessuna libreria: solo CSS + galleria.js. Vedi CLAUDE.md > Gallerie. */
+.galleria { margin: 1.5rem 0; }
+.galleria .galleria-fig { margin: 0 0 1rem; }
+.galleria .galleria-fig a { display: block; cursor: zoom-in; }
+.galleria .galleria-fig img { width: 100%; display: block; object-fit: cover; transition: opacity .15s; }
+.galleria .galleria-fig a:hover img { opacity: .88; }
+.galleria--3col .galleria-fig img { height: 220px; }
+.galleria--2col .galleria-fig img, .galleria--2-1 .galleria-fig img { height: 300px; }
+.galleria--1 .galleria-fig img { height: auto; }
+@media (max-width: 575px) { .galleria--3col .galleria-fig img, .galleria--2col .galleria-fig img, .galleria--2-1 .galleria-fig img { height: 220px; } }
+
+/* ingrandimento a schermo intero */
+.glb { position: fixed; inset: 0; z-index: 99999; background: rgba(0,0,0,.92); display: flex; align-items: center; justify-content: center; flex-direction: column; }
+.glb img { max-width: 94vw; max-height: 82vh; object-fit: contain; }
+.glb-cap { color: #eee; margin-top: 12px; padding: 0 16px; text-align: center; font-size: .95rem; min-height: 1.4em; }
+.glb-cnt { position: absolute; top: 14px; left: 18px; color: #bbb; font-size: .85rem; }
+.glb button { position: absolute; background: none; border: 0; color: #fff; font-size: 38px; line-height: 1; cursor: pointer; padding: 10px 16px; opacity: .8; }
+.glb button:hover { opacity: 1; }
+.glb .glb-x { top: 4px; right: 6px; }
+.glb .glb-p { left: 4px; top: 50%; transform: translateY(-50%); }
+.glb .glb-n { right: 4px; top: 50%; transform: translateY(-50%); }

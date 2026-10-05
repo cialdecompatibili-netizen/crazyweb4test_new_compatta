@@ -1,0 +1,4 @@
+User-agent: *
+Disallow:
+
+Sitemap: https://cialdecompatibili-netizen.github.io/crazyweb4test_new_compatta/sitemap.xml

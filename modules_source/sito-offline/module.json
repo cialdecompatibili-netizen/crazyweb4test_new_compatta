@@ -1,0 +1,1 @@
+{"name":"Sito Offline","hooks":{},"config_fields":[{"key":"offline","label":"Sito offline (blocca tutto il sito prima del lancio)","type":"checkbox","default":"false"},{"key":"messaggio","label":"Messaggio mostrato ai visitatori","type":"textarea","default":"Stiamo preparando il lancio. Torna a trovarci a breve."}]}

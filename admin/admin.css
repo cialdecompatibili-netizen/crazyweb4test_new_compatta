@@ -1,0 +1,115 @@
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;background:#c3c4c7;color:#1d2327}
+h1,h2,h3{margin:0 0 12px;font-weight:600}
+h2{font-size:20px}
+a{color:#2271b1;cursor:pointer}
+.login{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
+.login-box{background:#fff;padding:28px;border-radius:6px;max-width:380px;width:100%;box-shadow:0 1px 4px #0002}
+.login-box input{display:block;width:100%;margin:8px 0}
+input,select,textarea{font:inherit;padding:8px 10px;border:1px solid #8c8f94;border-radius:4px;background:#fff;width:100%}
+textarea{min-height:320px;font-family:Consolas,monospace;font-size:13px;resize:vertical}
+label{display:block;margin:10px 0 4px;font-weight:600;font-size:13px}
+.btn{display:inline-block;padding:7px 14px;border:1px solid #2271b1;border-radius:4px;background:#f6f7f7;color:#2271b1;cursor:pointer;font:inherit;margin:2px 4px 2px 0}
+.btn.primary{background:#2271b1;color:#fff}
+.btn.danger{border-color:#b32d2e;color:#b32d2e}
+.btn.sm{padding:3px 9px;font-size:12px}
+.msg{margin-top:8px;color:#b32d2e;min-height:18px}
+.side{position:fixed;top:0;left:0;bottom:0;width:200px;background:#1d2327;color:#c3c4c7;overflow:auto;z-index:50}
+.side .brand{padding:16px;color:#fff;font-weight:700;font-size:16px}
+.side .brand small{display:block;font-weight:400;font-size:11px;color:#9ca2a7;word-break:break-all}
+/* Pastiglia gialla col nome del repo nella barra in alto (visibile anche su mobile) */
+.topbar .repochip{background:#ffe600;color:#1d2327;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:700;word-break:break-all}
+.side .brand small b{background:#ffe600;color:#1d2327;padding:1px 6px;border-radius:3px;font-weight:700;font-size:13px}
+.side a{display:block;padding:11px 16px;color:#c3c4c7;text-decoration:none}
+.side a:hover{background:#2c3338;color:#72aee6}
+.side a.on{background:#2271b1;color:#fff}
+.side a.off{opacity:.4;cursor:not-allowed;pointer-events:none}
+.side a.off small{font-size:10px}
+.side a.out{margin-top:16px;border-top:1px solid #3c434a}
+.topbar{display:flex;align-items:center;gap:12px;position:sticky;top:0;margin-left:200px;background:#1d2327;color:#fff;padding:10px 20px;z-index:30;position:sticky}
+.topbar .burger{display:none}
+.topbar #topTitle{font-weight:600;margin-right:auto}
+.tlink{color:#72aee6;text-decoration:none;font-size:13px;border:1px solid #3c434a;border-radius:4px;padding:3px 10px}
+.tlink:hover{background:#2c3338}
+.dtxt{font-size:12px;color:#c3c4c7}
+.dbar{position:absolute;left:0;bottom:0;height:3px;width:0;background:linear-gradient(90deg,#2271b1,#72aee6);transition:width .6s ease}
+.main{margin-left:200px;padding:20px;max-width:980px}
+.card{background:#fff;border:1px solid #a7aaad;border-radius:4px;padding:16px;margin-bottom:16px}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.row>*{flex:1;min-width:150px}
+.list .it{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid #dcdcde}
+.list .it:last-child{border:0}
+.list .it span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.list .it small{color:#787c82;margin-left:6px}
+.tools{margin-bottom:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.im{background:#fff;border:1px solid #a7aaad;border-radius:4px;padding:6px;font-size:11px;word-break:break-all;text-align:center}
+.grid img{width:100%;height:90px;object-fit:cover;border-radius:3px}
+.dot{width:12px;height:12px;border-radius:50%;background:#999;display:inline-block}
+.dot.ok{background:#00a32a}.dot.run{background:#dba617}.dot.ko{background:#d63638}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1d2327;color:#fff;padding:10px 16px;border-radius:4px;display:none;z-index:99;max-width:90%}
+.overlay{display:none;position:fixed;inset:0;background:#0006;z-index:40}
+.mrow{display:grid;grid-template-columns:1fr 1fr 70px auto;gap:6px;align-items:center;margin-bottom:6px}
+.list .it small.ok{color:#00a32a;font-weight:600}
+.list .it small.ko{color:#8a8a8a}
+.sub{margin-left:20px;border-left:3px solid #8c8f94;padding-left:10px}
+@media(max-width:782px){
+ .side{transform:translateX(-100%);transition:transform .2s;width:240px}
+ .side.open{transform:none}
+ .overlay.open{display:block}
+ .topbar{margin-left:0;padding:10px 14px;gap:8px;flex-wrap:wrap}
+ .topbar .burger{display:block}
+ .burger{background:none;border:0;color:#fff;font-size:22px;cursor:pointer}
+ .main{margin-left:0;padding:12px}
+ .mrow{grid-template-columns:1fr 1fr}
+}
+
+/* anteprima markdown del Corpo */
+.mdprev{border:1px solid #8c8f94;border-radius:4px;background:#fff;padding:12px 16px;line-height:1.6;overflow:auto}
+.mdprev h1,.mdprev h2,.mdprev h3,.mdprev h4{margin:.9em 0 .4em}
+.mdprev p{margin:.6em 0}
+.mdprev code{background:#f0f0f1;padding:1px 5px;border-radius:3px;font-family:Consolas,monospace;font-size:.9em}
+.mdprev pre{background:#f0f0f1;padding:10px;border-radius:4px;overflow:auto}
+.mdprev pre code{background:none;padding:0}
+.mdprev blockquote{margin:.6em 0;padding:2px 12px;border-left:4px solid #c3c4c7;color:#50575e}
+.mdprev img{max-width:100%}
+
+
+.mdprev[contenteditable=true]{cursor:text;outline:none;min-height:200px}
+.mdprev[contenteditable=true]:focus{border-color:#2271b1;box-shadow:0 0 0 1px #2271b1}
+.mdprev a{color:#2271b1}
+.mdprev ul,.mdprev ol{margin:.6em 0;padding-left:1.6em}
+
+
+/* blocchi protetti dell'editor visuale (tabelle, HTML, Liquid) */
+.mdraw{position:relative;margin:10px 0;padding:8px 100px 8px 10px;border:1px dashed #b5bcc2;border-radius:4px;background:#fafbfc;user-select:none}
+.mdraw:hover{border-color:#2271b1}
+.mdraw .mdedit{position:absolute;top:4px;right:4px;width:26px;height:26px;padding:0;border:1px solid #c3c4c7;border-radius:4px;background:#fff;cursor:pointer;line-height:1}
+.mdraw .mdedit:hover{background:#2271b1;color:#fff;border-color:#2271b1}
+.mdraw .mddel{right:34px}
+.mdraw .mddel:hover{background:#d63638;border-color:#d63638}
+.mdraw .mddrag{right:64px;display:flex;align-items:center;justify-content:center;cursor:grab;font-size:13px;letter-spacing:-3px;user-select:none}
+#mdPrev .dnd-before{box-shadow:0 -3px 0 #2271b1}
+#mdPrev .dnd-after{box-shadow:0 3px 0 #2271b1}
+.mdraw-ta{display:block;width:100%;font-family:Consolas,monospace;font-size:13px;user-select:text}
+.mdraw-view{pointer-events:none;overflow:auto}
+.mdraw-liquid .mdliqb,.mdliq{font-family:Consolas,monospace;font-size:12px;background:#eef3fb;color:#1d4f91;border:1px solid #c8d8ee;border-radius:3px;padding:1px 6px;white-space:pre-wrap}
+.mdliq{display:inline-block;user-select:none;cursor:default}
+.mdprev table{border-collapse:collapse;margin:.6em 0;width:100%}
+.mdprev th,.mdprev td{border:1px solid #c3c4c7;padding:5px 9px}
+.mdprev th{background:#f0f0f1}
+.mdprev pre[data-lang]::before{content:attr(data-lang);display:block;font-size:11px;color:#787c82;margin-bottom:4px}
+.btn.star{background:none;border:0;padding:0 4px;font-size:20px;line-height:1;color:#a7aaad;cursor:pointer}.btn.star:hover{color:#dba617}.btn.star.on{color:#dba617}
+.btn.home{background:none;border:0;padding:0 4px;font-size:18px;line-height:1;cursor:pointer;opacity:.35;filter:grayscale(1)}.btn.home:hover{opacity:.8;filter:none}.btn.home.on{opacity:1;filter:none}
+
+.btn.eye{background:none;border:0;padding:0 4px;line-height:1;cursor:pointer;color:#2271b1;display:inline-flex;align-items:center}.btn.eye:hover{color:#135e96}.btn.eye.off{color:#b32d2e}
+.list .it.hid{opacity:.6}.list .it.hid>span::after{content:' \00b7  nascosto';color:#b32d2e;font-size:.85em;font-weight:600}
+/* Menu a gruppi comprimibili (admin-gruppi.js). Senza JS i gruppi restano aperti: si nascondono solo con .side.js */
+.side .gh{display:block;width:100%;text-align:left;background:none;border:0;border-top:1px solid #3c434a;color:#9ca2a7;font:600 11px/1 inherit;letter-spacing:.06em;text-transform:uppercase;padding:13px 16px;cursor:pointer}
+.side .gh:hover{color:#72aee6}
+.side.js .gh::after{content:"\25B8";float:right}
+.side.js .grp.open .gh::after{content:"\25BE"}
+.side.js .gb{display:none}
+.side.js .grp.open .gb{display:block}
+.side .gb a{padding-left:24px}
