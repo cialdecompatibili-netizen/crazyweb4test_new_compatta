@@ -26,6 +26,33 @@ module Jekyll
       %r{<script\b[^>]*?(?:#{names.map { |n| Regexp.escape(n) }.join('|')})[^>]*>\s*</script>[ \t]*\r?\n?}m
     end
 
+    # Loader della ricerca: sostituisce <script type="module" src=".../ninja-keys.min.js"> (vedi `run`). __SRC__ = URL originale del modulo.
+    LAZY_SEARCH = <<~'HTML'.freeze
+      <script>
+      (function(){
+      var S="__SRC__",st=0,q=0,d=document;
+      function done(){st=2;if(q){q=0;if(window.openSearchModal)window.openSearchModal();}}
+      function ld(){
+        if(st)return;st=1;
+        var e=d.createElement("script");e.type="module";e.src=S;
+        e.onload=done;e.onerror=function(){st=0;q=0;};
+        d.head.appendChild(e);
+      }
+      function later(){(window.requestIdleCallback||function(f){setTimeout(f,300);})(ld);}
+      function lens(e){return e.target&&e.target.closest&&e.target.closest("#search-toggle");}
+      d.addEventListener("click",function(e){
+        if(lens(e)&&st!==2){e.preventDefault();e.stopPropagation();q=1;ld();}
+      },true);
+      d.addEventListener("keydown",function(e){
+        if((e.ctrlKey||e.metaKey)&&(e.key==="k"||e.key==="K")&&st!==2){e.preventDefault();q=1;ld();}
+      },true);
+      d.addEventListener("pointerover",function(e){if(lens(e))ld();},true);
+      ["pointerdown","touchstart","keydown","wheel"].forEach(function(n){d.addEventListener(n,later,{once:true,passive:true,capture:true});});
+      window.addEventListener("load",function(){setTimeout(later,8000);});
+      })();
+      </script>
+    HTML
+
     FONT_LINK = %r{<link\b[^>]*?href="(https://fonts\.googleapis\.com/css[^"]*)"[^>]*>}m.freeze
 
     def self.run(item)
@@ -97,6 +124,23 @@ module Jekyll
       end
       # se non resta piu' nessuna risorsa da jsdelivr, il preconnect non serve
       out = out.sub(%r{\n?<link rel="preconnect" href="https://cdn\.jsdelivr\.net" crossorigin>}, '') unless out.scan('cdn.jsdelivr.net').size > 1
+
+      # Pygments (evidenziazione del codice): il CSS del tema chiaro bloccava il disegno anche nelle pagine SENZA codice.
+      # Se la pagina non ha <pre>, <code> ne' .highlight si carica senza bloccare (media="print"); theme.js puo' comunque riattivarlo cambiando `media`.
+      unless text =~ /<pre\b|<code\b|class="[^"]*\bhighlight\b/
+        out = out.gsub(/<link\b[^>]*id="highlight_theme_light"[^>]*>/) { |t| t.sub(/\smedia=""/, ' media="print"') }
+      end
+
+      # Ricerca (ninja-keys + lit, ~25 file JS, ~1,5 s di CPU su mobile): non serve per il primo disegno. Si carica alla prima interazione
+      # (click sulla lente, Ctrl/Cmd+K, tocco, tasto, scroll con rotella), al passaggio sulla lente, o a pagina ferma dopo 8 s.
+      # Il comportamento e' identico: se l'utente apre la ricerca prima del caricamento, il modulo parte e la finestra si apre appena pronto.
+      # Spegnere: `performance: { lazy_search: false }` in _config.yml.
+      unless cfg.is_a?(Hash) && cfg['lazy_search'] == false
+        out = out.gsub(%r{<script\b[^>]*\btype="module"[^>]*\bsrc="([^"]*/ninja-keys\.min\.js)"[^>]*>\s*</script>}m) do
+          src = Regexp.last_match(1)
+          LAZY_SEARCH.sub('__SRC__') { src }
+        end
+      end
 
       item.output = out
     end
