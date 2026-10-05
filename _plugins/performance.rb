@@ -67,10 +67,10 @@ module Jekyll
       end
       out = out.sub(/(<head(?:\s[^>]*)?>)/) { "#{Regexp.last_match(1)}\n<link rel=\"preconnect\" href=\"https://cdn.jsdelivr.net\" crossorigin>" } if out.include?('cdn.jsdelivr.net')
 
-      # Font Awesome in LOCALE (assets/vendor/fontawesome): nessuna connessione a jsdelivr nel percorso critico del rendering.
+      # Font Awesome in LOCALE (assets/libs/fontawesome): nessuna connessione a jsdelivr nel percorso critico del rendering.
       # Se la cartella non esiste resta il CDN del tema (nessun rischio di pagina senza icone).
-      if File.exist?(File.join(item.site.source, 'assets/vendor/fontawesome/css/all.min.css'))
-        fa = "#{item.site.config['baseurl']}/assets/vendor/fontawesome/css/all.min.css"
+      if File.exist?(File.join(item.site.source, 'assets/libs/fontawesome/css/all.min.css'))
+        fa = "#{item.site.config['baseurl']}/assets/libs/fontawesome/css/all.min.css"
         out = out.sub(%r{<link\b[^>]*?fontawesome-free[^>]*>}m) { %(<link rel="stylesheet" href="#{fa}">) }
       end
 
