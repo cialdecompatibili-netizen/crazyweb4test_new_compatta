@@ -1,0 +1,18 @@
+{
+  "sito": "pannellisolari",
+  "pagine": [
+    {
+      "pagina": "_pages/home.md",
+      "front": {
+        "seo_title": "{title} | Impianti fotovoltaici",
+        "seo_description": "Impianti fotovoltaici chiavi in mano per casa e azienda: sopralluogo e preventivo gratuiti, progetto, installazione, accumulo e pratiche per gli incentivi. Risposta entro 24 ore."
+      },
+      "righe": [
+        {"inizia_con": ["## Web Agency", "## Energia solare"], "nuova": "## Energia solare per la tua casa e la tua azienda, dal progetto all'attivazione."},
+        {"inizia_con": ["Comunicazione, web marketing", "Progettiamo e installiamo impianti"], "nuova": "Progettiamo e installiamo impianti fotovoltaici su misura, con pannelli, inverter e sistemi di accumulo scelti in base ai tuoi consumi, al tetto e al budget. L'obiettivo è farti produrre l'energia che usi davvero, per ridurre la bolletta e dipendere meno dalla rete."},
+        {"inizia_con": ["Un team unico di professionisti", "Con la formula chiavi in mano"], "nuova": "Con la formula chiavi in mano ti seguiamo in ogni fase: sopralluogo, progetto, installazione, collegamento alla rete e pratiche per gli incentivi disponibili. Rispondiamo entro 24 ore, festivi esclusi, e il sopralluogo con preventivo è gratuito."},
+        {"inizia_con": ["**Vuoi far crescere il tuo business?**", "**Vuoi sapere quanto puoi risparmiare?**"], "nuova": "**Vuoi sapere quanto puoi risparmiare?** Scrivici su WhatsApp o richiedi un preventivo: valutiamo insieme la soluzione giusta per il tuo tetto."}
+      ]
+    }
+  ]
+}

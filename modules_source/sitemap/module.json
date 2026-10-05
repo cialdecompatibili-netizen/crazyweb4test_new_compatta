@@ -1,0 +1,8 @@
+{
+  "name": "Sitemap XML",
+  "hooks": {},
+  "config_fields": [
+    { "key": "exclude_paths", "type": "textarea", "label": "Percorsi da escludere (uno per riga, anche parziali: es. /admin/, /tag/, /category/, /page/)", "default": "/admin/\n/_pages/\n/tag/\n/category/\n/page/" },
+    { "key": "include_lastmod", "type": "checkbox", "label": "Includi la data di ultima modifica (lastmod) dove disponibile", "default": "true" }
+  ]
+}

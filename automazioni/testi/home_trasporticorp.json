@@ -1,0 +1,18 @@
+{
+  "sito": "trasporticorp",
+  "pagine": [
+    {
+      "pagina": "_pages/home.md",
+      "front": {
+        "seo_title": "{title} | Trasporti merci su strada",
+        "seo_description": "Trasporti merci su strada con camion e autisti esperti: carichi completi e parziali, consegne puntuali, preventivo gratuito e risposta entro 24 ore."
+      },
+      "righe": [
+        {"inizia_con": ["## Web Agency", "## Trasporti su strada"], "nuova": "## Trasporti su strada puntuali, per merci che non possono aspettare."},
+        {"inizia_con": ["Comunicazione, web marketing", "Mettiamo a disposizione camion"], "nuova": "Mettiamo a disposizione camion e autisti esperti per spostare le tue merci da un punto all'altro, con tempi chiari e consegne affidabili. Che si tratti di un carico completo, di un collettame o di una consegna urgente, organizziamo il viaggio intorno al tuo carico e alle tue scadenze."},
+        {"inizia_con": ["Un team unico di professionisti", "Un unico referente segue"], "nuova": "Un unico referente segue ogni trasporto, dal ritiro alla consegna, e ti tiene aggiornato lungo il percorso. Rispondiamo entro 24 ore, festivi esclusi, e il preventivo è gratuito e senza impegno."},
+        {"inizia_con": ["**Vuoi far crescere il tuo business?**", "**Hai una merce da spedire?**"], "nuova": "**Hai una merce da spedire?** Scrivici su WhatsApp o richiedi un preventivo: ti proponiamo il mezzo e il prezzo giusti per il tuo carico."}
+      ]
+    }
+  ]
+}

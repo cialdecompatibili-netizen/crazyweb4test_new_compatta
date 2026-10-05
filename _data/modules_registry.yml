@@ -1,0 +1,46 @@
+{
+  "installed": {
+    "sitemap": {
+      "name": "Sitemap XML",
+      "enabled": true,
+      "hooks": {},
+      "config_fields": [
+        {
+          "key": "exclude_paths",
+          "type": "textarea",
+          "label": "Percorsi da escludere (uno per riga, anche parziali: es. /admin/, /tag/, /category/, /page/)",
+          "default": "/admin/\n/_pages/\n/tag/\n/category/\n/page/"
+        },
+        {
+          "key": "include_lastmod",
+          "type": "checkbox",
+          "label": "Includi la data di ultima modifica (lastmod) dove disponibile",
+          "default": "true"
+        }
+      ],
+      "roots": [
+        "sitemap.xml"
+      ]
+    },
+    "sito-offline": {
+      "name": "Sito Offline",
+      "enabled": false,
+      "hooks": {},
+      "config_fields": [
+        {
+          "key": "offline",
+          "label": "Sito offline (blocca tutto il sito prima del lancio)",
+          "type": "checkbox",
+          "default": "false"
+        },
+        {
+          "key": "messaggio",
+          "label": "Messaggio mostrato ai visitatori",
+          "type": "textarea",
+          "default": "Stiamo preparando il lancio. Torna a trovarci a breve."
+        }
+      ],
+      "roots": []
+    }
+  }
+}

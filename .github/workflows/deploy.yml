@@ -1,0 +1,126 @@
+name: Deploy site
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - "assets/**"
+      - "**.bib"
+      - "**.html"
+      - "**.js"
+      - "**.liquid"
+      - "**/*.md"
+      - "**.yml"
+      - "Gemfile"
+      - "Gemfile.lock"
+      - "!.github/workflows/axe.yml"
+      - "!.github/workflows/broken-links.yml"
+      - "!.github/workflows/deploy-docker-tag.yml"
+      - "!.github/workflows/deploy-image.yml"
+      - "!.github/workflows/docker-slim.yml"
+      - "!.github/workflows/lighthouse-badger.yml"
+      - "!.github/workflows/prettier.yml"
+      - "!lighthouse_results/**"
+      - "!docs/CONTRIBUTING.md"
+      - "!docs/CUSTOMIZE.md"
+      - "!docs/FAQ.md"
+      - "!docs/INSTALL.md"
+      - "!README.md"
+  pull_request:
+    branches:
+      - master
+      - main
+    paths:
+      - "assets/**"
+      - "**.bib"
+      - "**.html"
+      - "**.js"
+      - "**.liquid"
+      - "**/*.md"
+      - "**.yml"
+      - "Gemfile"
+      - "Gemfile.lock"
+      - "!.github/workflows/axe.yml"
+      - "!.github/workflows/broken-links.yml"
+      - "!.github/workflows/deploy-docker-tag.yml"
+      - "!.github/workflows/deploy-image.yml"
+      - "!.github/workflows/docker-slim.yml"
+      - "!.github/workflows/lighthouse-badger.yml"
+      - "!.github/workflows/prettier.yml"
+      - "!lighthouse_results/**"
+      - "!docs/CONTRIBUTING.md"
+      - "!docs/CUSTOMIZE.md"
+      - "!docs/FAQ.md"
+      - "!docs/INSTALL.md"
+      - "!README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Un solo deploy alla volta: se arriva un nuovo commit mentre uno e' in corso, quello vecchio viene
+# annullato e parte solo l'ultimo. Evita i deploy sovrapposti che scrivono insieme su gh-pages
+# (causa dei fallimenti allo step "Deploy" e dei "cancelled" a meta') e le build inutili.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    # available images: https://github.com/actions/runner-images#available-images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+      - name: Setup Ruby 💎
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3.5"
+          bundler-cache: true
+      - name: Setup Python 🐍
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip" # caching pip dependencies
+      - name: Setup Node 🧰
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install JS deps 📦
+        run: npm ci
+      - name: Update _config.yml ⚙️
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          commitChange: false
+          valueFile: "_config.yml"
+          propertyPath: "giscus.repo"
+          value: ${{ github.repository }}
+      - name: Install and Build 🔧
+        run: |
+          sudo apt-get update && sudo apt-get install -y imagemagick
+          pip3 install --upgrade nbconvert
+          export JEKYLL_ENV=production
+          # URL e baseurl ricavati dal repo in cui gira il workflow: un clone si pubblica da solo col proprio nome.
+          # Dominio personalizzato: se esiste il file CNAME nella root si usa quello (baseurl vuoto).
+          # Repo <utente>.github.io: sito in root (baseurl vuoto). In locale valgono url/baseurl di _config.yml.
+          # PUNTO CRITICO: la STESSA regola e' copiata in repos_auto.py e automazioni/common/config.py (script Python).
+          # Se la cambi qui, cambiala anche li, altrimenti gli script pubblicano su indirizzi diversi dal deploy.
+          OWNER="${GITHUB_REPOSITORY%%/*}"; REPO="${GITHUB_REPOSITORY#*/}"
+          if [ -s CNAME ]; then SITE_URL="https://$(head -n1 CNAME | tr -d '[:space:]')"; BASE=""
+          elif [ "${REPO,,}" = "${OWNER,,}.github.io" ]; then SITE_URL="https://${OWNER}.github.io"; BASE=""
+          else SITE_URL="https://${OWNER}.github.io"; BASE="/${REPO}"; fi
+          printf 'url: "%s"\nbaseurl: "%s"\n' "$SITE_URL" "$BASE" > _ci_config.yml
+          cat _ci_config.yml
+          bundle exec jekyll build --config _config.yml,_ci_config.yml
+      - name: Purge unused CSS 🧹
+        run: |
+          npm install -g purgecss
+          purgecss -c purgecss.config.js
+      - name: Deploy 🚀
+        if: github.event_name != 'pull_request'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: _site

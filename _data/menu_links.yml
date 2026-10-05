@@ -1,0 +1,3 @@
+# Voci-link del menu (gestite da /admin/ > Menu). Non sono pagine: nessun permalink, nessuna collisione.
+# Formato per voce:  - title: Testo   url: /percorso/ oppure https://...   order: numero   blank: true|false
+[]

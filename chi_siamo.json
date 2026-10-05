@@ -1,0 +1,101 @@
+{
+  "_nota": "Contenuto della pagina /chi-siamo/. Modifica SOLO questo file, poi lancia: python pubblica_chi_siamo.py --push. Le sezioni sono in 'sezioni' e vengono generate nell'ordine scritto: per aggiungere/togliere/riordinare basta duplicare o cancellare un blocco. Tipi sezione: hero, numeri, griglia, finale. Nei testi e' ammesso HTML semplice (<b>, <a>). {baseurl} non serve: i link usano il filtro relative_url.",
+
+  "pagina": {
+    "titolo": "chi siamo",
+    "permalink": "/chi-siamo/",
+    "description": "Web agency a Roma dal 2013. Strategia, siti, e-commerce, campagne e applicativi su misura.",
+    "nav": false
+  },
+
+  "contatti": {
+    "whatsapp": "",
+    "link_preventivo": "/contatti/",
+    "testo_whatsapp": "Scrivici su WhatsApp",
+    "testo_preventivo": "Richiedi un preventivo",
+    "testo_servizi": "Scopri i servizi",
+    "link_servizi": "/servizi/"
+  },
+
+  "stile": {
+    "prefisso_css": "cs",
+    "larghezza_max": "960px",
+    "raggio": "12px"
+  },
+
+  "sezioni": [
+    {
+      "tipo": "hero",
+      "eyebrow": "Chi siamo",
+      "titolo": "Trasformiamo idee e obiettivi di business in piattaforme digitali che funzionano.",
+      "paragrafi": [
+        "Siamo una web agency di Roma e lavoriamo dal 2013 con imprenditori, start up, grandi aziende e Pubblica Amministrazione. Non vendiamo pacchetti preconfezionati: partiamo dal tuo business, capiamo dove vuoi arrivare e costruiamo il percorso più concreto per arrivarci."
+      ],
+      "bottoni": ["whatsapp", "preventivo", "servizi"]
+    },
+    {
+      "tipo": "numeri",
+      "voci": [
+        {"valore": "Dal 2013", "etichetta": "a Roma, sul campo"},
+        {"valore": "24 ore", "etichetta": "per la nostra risposta*"},
+        {"valore": "1° incontro", "etichetta": "di consulenza gratuito"},
+        {"valore": "Privato e PA", "etichetta": "esperienza con entrambi"}
+      ],
+      "nota": "*Festivi esclusi."
+    },
+    {
+      "tipo": "griglia",
+      "titolo": "Come lavoriamo",
+      "sottotitolo": "Un unico gruppo di professionisti segue il progetto dall'inizio alla fine, così niente passaggi di mano e niente messaggi che si perdono.",
+      "colonne": 3,
+      "numerata": true,
+      "card": [
+        {"titolo": "Ascolto e analisi", "testo": "Studiamo attività, mercato e concorrenti. Definiamo insieme gli obiettivi e come misurarli."},
+        {"titolo": "Strategia", "testo": "Traduciamo l'analisi in un piano chiaro: priorità, tempi, budget e canali giusti per te."},
+        {"titolo": "Progetto e sviluppo", "testo": "Design, contenuti e tecnologia prendono forma: siti, e-commerce, campagne e applicativi su misura."},
+        {"titolo": "Misura e migliora", "testo": "Guardiamo i numeri, non le impressioni. Ottimizziamo nel tempo per far crescere i risultati."}
+      ]
+    },
+    {
+      "tipo": "griglia",
+      "titolo": "Cosa facciamo",
+      "sottotitolo": "Tutto ciò che serve per essere trovati, scelti e ricordati online.",
+      "colonne": 3,
+      "card": [
+        {"titolo": "Siti e piattaforme", "testo": "Siti aziendali, portali e applicativi sviluppati sulle esigenze reali del tuo business.", "link": "/servizi/"},
+        {"titolo": "E-commerce", "testo": "Negozi online pensati per vendere, dalla scelta della piattaforma alla crescita.", "link": "/servizi/"},
+        {"titolo": "Web marketing", "testo": "SEO, campagne e social per portare le persone giuste sul tuo sito.", "link": "/servizi/"},
+        {"titolo": "Brand identity", "testo": "Un'immagine coerente e riconoscibile, dal logo all'esperienza d'uso.", "link": "/servizi/"},
+        {"titolo": "Comunicazione", "testo": "Contenuti e messaggi che raccontano chi sei a chi conta davvero.", "link": "/servizi/"},
+        {"titolo": "Consulenza", "testo": "Analisi e strategia per decidere dove investire, prima di spendere.", "link": "/servizi/"}
+      ]
+    },
+    {
+      "tipo": "griglia",
+      "titolo": "Perché scegliere noi",
+      "colonne": 2,
+      "card": [
+        {"titolo": "Analisi su misura", "testo": "Ogni progetto nasce dal tuo business e dai tuoi obiettivi, non da un modello standard."},
+        {"titolo": "Creatività e concretezza", "testo": "Idee che si vedono e numeri che si leggono: puntiamo a risultati misurabili."},
+        {"titolo": "Un solo interlocutore", "testo": "Dalla strategia al risultato, un team coordinato che risponde di tutto il progetto."},
+        {"titolo": "Tempi di risposta certi", "testo": "Ti rispondiamo entro 24 ore (festivi esclusi) e la prima consulenza è gratuita."}
+      ]
+    },
+    {
+      "tipo": "griglia",
+      "titolo": "Per chi lavoriamo",
+      "colonne": 3,
+      "card": [
+        {"titolo": "Imprenditori e PMI", "testo": "Portiamo online l'attività e la aiutiamo a crescere con strumenti che si ripagano."},
+        {"titolo": "Start up", "testo": "Dal lancio alla scalata: piattaforme flessibili e una comunicazione che parte col piede giusto."},
+        {"titolo": "Grandi aziende e PA", "testo": "Progetti strutturati, processi chiari e attenzione a requisiti e continuità."}
+      ]
+    },
+    {
+      "tipo": "finale",
+      "titolo": "Vuoi far crescere il tuo business?",
+      "testo": "Raccontaci di cosa hai bisogno: costruiamo insieme la soluzione giusta per te. La prima consulenza è gratuita.",
+      "bottoni": ["whatsapp", "preventivo", "servizi"]
+    }
+  ]
+}

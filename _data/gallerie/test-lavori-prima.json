@@ -1,0 +1,26 @@
+{
+  "titolo": "Test lavori prima",
+  "layout": "3col",
+  "immagini": [
+    {
+      "src": "assets/img/1.jpg",
+      "didascalia": "Il cantiere all'inizio"
+    },
+    {
+      "src": "assets/img/3.jpg",
+      "didascalia": "Le prime misure"
+    },
+    {
+      "src": "assets/img/5.jpg",
+      "didascalia": "Il materiale pronto"
+    },
+    {
+      "src": "assets/img/gallerie/test-lavori-prima/san-francisco.jpg",
+      "didascalia": "hypie"
+    },
+    {
+      "src": "assets/img/gallerie/test-lavori-prima/andy-warhol-5.jpg",
+      "didascalia": "handy"
+    }
+  ]
+}

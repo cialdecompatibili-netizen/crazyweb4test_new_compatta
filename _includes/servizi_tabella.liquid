@@ -1,0 +1,28 @@
+{%- comment -%}
+  TABELLA DI UNA SEZIONE di /servizi/ (usata da _pages/servizi.md). Parametri: titolo (nome della sezione) e lista (array di servizi).
+  Ordine: prima i servizi con 'ordine' (numero crescente), poi quelli senza, in ordine alfabetico. 3 colonne, celle vuote a pareggiare.
+  PUNTI CRITICI: (1) niente righe vuote DENTRO la tabella: kramdown chiuderebbe il blocco HTML. (2) le righe delle celle devono iniziare
+  con "<td><a": pubblica_servizi.py cerca "<td><b>" e cosi' non le tocca. (3) la sezione sparisce da sola se non ha servizi.
+{%- endcomment -%}
+{%- assign con_ord = include.lista | where_exp: "s", "s.ordine" | sort: "ordine" -%}
+{%- assign senza_ord = include.lista | where_exp: "s", "s.ordine == nil" | sort_natural: "title" -%}
+{%- assign righe = con_ord | concat: senza_ord -%}
+{%- if righe.size > 0 %}
+
+## {{ include.titolo }}
+<table class="srv-t"><tr>
+{%- for s in righe %}
+<td><a href="{{ s.url | relative_url }}"><b>{{ s.title | escape }}</b>{% if s.sottotitolo %}<small>{{ s.sottotitolo | escape }}</small>{% endif %}</a></td>
+{%- assign r = forloop.index | modulo: 3 %}
+{%- if r == 0 and forloop.last == false %}
+</tr><tr>
+{%- endif %}
+{%- endfor %}
+{%- assign resto = righe.size | modulo: 3 %}
+{%- if resto == 1 %}
+<td></td><td></td>
+{%- elsif resto == 2 %}
+<td></td>
+{%- endif %}
+</tr></table>
+{%- endif %}

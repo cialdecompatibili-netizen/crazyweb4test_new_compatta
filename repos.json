@@ -1,0 +1,32 @@
+{
+  "_nota": "Unica fonte di verita' per pubblica_servizi.py e pubblica_chi_siamo.py. 'remoto' e 'baseurl' = 'auto': ricavati dal git origin della cartella (stessa regola di deploy.yml), quindi un clone funziona senza toccare niente. Il blocco 'prod' tiene remoto e baseurl SCRITTI A MANO apposta: e' il controllo di sicurezza (un origin sbagliato blocca il push). Per un secondo repo basta aggiungere un blocco qui. 'dir' relativa alla cartella di questo progetto (o assoluta).",
+  "default": "test",
+  "repos": {
+    "test": {
+      "dir": ".",
+      "remoto": "auto",
+      "baseurl": "auto",
+      "etichetta": "TEST",
+      "protetto": false
+    },
+    "prod": {
+      "dir": "../crazyweb4",
+      "remoto": "cialdecompatibili-netizen/crazyweb4",
+      "baseurl": "/crazyweb4",
+      "etichetta": "PROD",
+      "protetto": true
+    }
+  },
+  "sito": {
+    "posts_dir": "_posts",
+    "servizi_dir": "_servizi",
+    "servizi_page": "_pages/servizi.md",
+    "home_page": "_pages/home.md",
+    "permalink_post": "/blog/{anno}/{slug}/",
+    "_nota_permalink": "DEVE coincidere con collections > servizi > permalink in _config.yml (e con admin/admin-views.js > doPut). Se cambia uno, cambiano tutti e tre.",
+    "permalink_servizio": "/servizi/{slug}/",
+    "backup_dir_nome": "_backup_test",
+    "css_classe_tabella": "srv-t",
+    "css_classe_home": "srv-home-card"
+  }
+}

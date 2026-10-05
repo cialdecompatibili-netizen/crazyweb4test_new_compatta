@@ -1,0 +1,27 @@
+---
+layout: default
+---
+{% comment %}
+  LAYOUT DEI SERVIZI (collection "servizi", cartella _servizi/, admin > Servizi).
+  Volutamente SENZA data, tag, categorie e link agli archivi del blog: i servizi non sono articoli.
+  Titolo e descrizione arrivano dal front matter; schema.org "Service" e breadcrumb li emette
+  _includes/metadata.liquid (is_service = page.collection == 'servizi').
+{% endcomment %}
+{% if page._styles %}
+  <style type="text/css">
+    {{ page._styles }}
+  </style>
+{% endif %}
+
+<div class="post">
+  <header class="post-header">
+    <h1 class="post-title">{{ page.title }}</h1>
+    {% if page.description %}<p class="post-description">{{ page.description }}</p>{% endif %}
+  </header>
+
+  <article class="post-content">
+    <div id="markdown-content">
+      {{ content }}
+    </div>
+  </article>
+</div>

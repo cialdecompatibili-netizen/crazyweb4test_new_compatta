@@ -1,0 +1,180 @@
+{% comment %}
+  =====================================================================================================================
+  FORM CONTATTI RIUSABILE  (_includes/contatti_form.liquid)  -  si inserisce in una pagina con il tag include (vedi _pages/contatti.md)
+  =====================================================================================================================
+  COSA FA
+  Mostra nome / email / messaggio + il riquadro Turnstile (il "sei un umano?" di Cloudflare) e, all'invio, manda i dati al
+  Worker Cloudflare "contatti-form", che li controlla e li scrive nel foglio Google. Questi commenti Liquid NON finiscono nella
+  pagina pubblicata (a differenza di quelli HTML): si leggono solo qui.
+
+  CONFIGURAZIONE (nessun nome di sito e' scritto in questo file) - _config.yml, sezione "contatti":
+    endpoint          = indirizzo del Worker (https://contatti-form.evabomboniere.workers.dev)
+    turnstile_sitekey = chiave PUBBLICA di Turnstile (la segreta sta solo nel Worker). Non serve se captcha e' altcha
+    captcha           = "turnstile" (default) oppure "altcha" (calcolo nel browser, senza servizi esterni; vedi worker.js). Interruttore in admin > Impostazioni
+  Se uno dei due e' vuoto il form non compare e si legge "non e' ancora attivo": e' il modo per SPEGNERE il form senza toccare il codice.
+  Si possono anche passare al volo:  include contatti_form.liquid endpoint="..." sitekey="..."  (per un form con un Worker diverso).
+
+  ANTISPAM (3 livelli, il codice che li controlla e' in claudetemp/contatti-worker/worker.js):
+    1. campo trappola "website", nascosto fuori schermo: gli umani non lo vedono, i bot lo compilano
+    2. tempo minimo: la pagina manda in "t" quando e' stata aperta; il Worker scarta gli invii sotto i 3 secondi
+    3. Turnstile: il token del riquadro viene verificato dal Worker con la chiave segreta
+
+  PUNTI CRITICI
+    (1) I NOMI dei campi (nome, email, messaggio, website, t, cf-turnstile-response, tipo, sito, pagina) sono un accordo con worker.js:
+        se ne cambi uno qui, cambialo anche la'.
+    (2) Il dominio su cui sta il sito deve essere registrato nel widget Turnstile (Cloudflare > Turnstile > Hostname Management),
+        altrimenti il riquadro non compare. github.io e' gia' registrato; un dominio personalizzato va aggiunto (max 10 gratis per widget).
+    (3) Usa una sola volta per pagina: gli id (cf-form, cf-ts, ...) sono fissi.
+    (4) Non usare le parentesi graffe con la percentuale dentro i commenti: Liquid le eseguirebbe.
+    (5) Due modalita', scelte da _config.yml > contatti.captcha: turnstile (default, riquadro Cloudflare) e altcha (calcolo nel browser, funzioni
+        altcha/prepara/token/rinnova nello script). In altcha non serve la sitekey ne' il caricamento di api.js. Gli unici punti che dipendono
+        dalla modalita' sono: cf_ok (form attivo), il div cf-ts, il tag script di Turnstile, avvia(), token() e rinnova(). L'if/else del form
+        e' chiuso da endif (non unless): non cambiarlo in unless. Il campo inviato cambia: "altcha" oppure "cf-turnstile-response".
+    (6) Liquid non ha parentesi negli if: le condizioni composte si fanno a passi (vedi cf_ok), mai con "and/or" misti.
+  Per togliere del tutto il sistema vedi le istruzioni in cima a claudetemp/contatti-worker/worker.js.
+  =====================================================================================================================
+{% endcomment %}
+{% assign cf_endpoint = include.endpoint | default: site.contatti.endpoint %}
+{% assign cf_sitekey = include.sitekey | default: site.contatti.turnstile_sitekey %}
+{% assign cf_mode = include.captcha | default: site.contatti.captcha | default: 'turnstile' %}
+{% if cf_mode != 'altcha' %}{% assign cf_mode = 'turnstile' %}{% endif %}
+{% comment %} cf_ok: Liquid non ha parentesi negli if, quindi calcolo il "form attivo" a passi (endpoint sempre; sitekey solo in modalita' turnstile). {% endcomment %}
+{% assign cf_ok = true %}
+{% if cf_endpoint == nil or cf_endpoint == '' %}{% assign cf_ok = false %}{% endif %}
+{% if cf_mode == 'turnstile' %}{% if cf_sitekey == nil or cf_sitekey == '' %}{% assign cf_ok = false %}{% endif %}{% endif %}
+{% if cf_ok == false %}
+<p class="text-muted"><em>Il modulo di contatto non è ancora attivo.</em></p>
+{% else %}
+{% comment %} STILE (solo questo form): stessa lingua grafica delle card della home (bordo sottile, angoli 12px, fondo crema, tema scuro incluso) e pulsante a pillola come "Vedi tutti i servizi". Font 16px nei campi: sotto, iOS ingrandisce la pagina al tocco. Non usare le graffe con la percentuale in questi commenti. {% endcomment %}
+<style>
+.cf-wrap,.cf-intro{max-width:520px;margin-left:auto;margin-right:auto}
+.cf-intro{text-align:center;margin-bottom:1.5rem}
+.cf-form{padding:28px;border:1px solid rgba(0,0,0,.12);border-radius:12px;background:#fffdf5}
+html[data-theme="dark"] .cf-form{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.15)}
+.cf-form .mb-3{margin:0 0 1.1rem}
+.cf-form label.form-label{display:block;width:100%;margin:0 0 .4rem;font-weight:600;text-align:left}
+.cf-form input.form-control,.cf-form textarea.form-control{display:block;width:100%;box-sizing:border-box;margin:0;padding:.75rem .9rem;font:inherit;font-size:1rem;line-height:1.4;color:inherit;background:#fff;border:1px solid rgba(0,0,0,.2);border-radius:8px}
+html[data-theme="dark"] .cf-form input.form-control,html[data-theme="dark"] .cf-form textarea.form-control{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.25)}
+.cf-form .form-control::placeholder{opacity:.5}
+.cf-form textarea.form-control{min-height:9rem;resize:vertical}
+.cf-form .form-control:focus{outline:2px solid var(--global-theme-color);outline-offset:1px}
+.cf-form .btn{display:block;width:100%;margin:1.5rem 0 0;padding:1rem 1.5rem;border:0;border-radius:999px;background:var(--global-theme-color);color:#fff;font-size:1.1rem;font-weight:700;letter-spacing:.01em;cursor:pointer;box-shadow:0 6px 18px color-mix(in srgb,var(--global-theme-color) 38%,transparent);transition:transform .15s ease,box-shadow .15s ease,filter .15s ease}
+.cf-form .btn:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 10px 24px color-mix(in srgb,var(--global-theme-color) 45%,transparent)}
+.cf-form .btn:active{transform:translateY(0);box-shadow:0 3px 10px color-mix(in srgb,var(--global-theme-color) 35%,transparent)}
+.cf-form .btn:focus-visible{outline:3px solid var(--global-theme-color);outline-offset:3px}
+.cf-form .btn:disabled{opacity:.65;cursor:progress;transform:none;box-shadow:none}
+@media (prefers-reduced-motion:reduce){.cf-form .btn{transition:none}.cf-form .btn:hover{transform:none}}
+.cf-nota{margin:.8rem 0 0;font-size:.85rem;opacity:.7;text-align:center}
+#cf-esito:not(:empty){margin:1rem 0 0;padding:.75rem 1rem;border-radius:8px;background:rgba(0,0,0,.05);font-weight:600;text-align:center}
+html[data-theme="dark"] #cf-esito:not(:empty){background:rgba(255,255,255,.08)}
+</style>
+<div class="cf-wrap">
+<form id="cf-form" class="cf-form" novalidate>
+  <div class="mb-3">
+    <label for="cf-nome" class="form-label">Come ti chiami?</label>
+    <input type="text" class="form-control" id="cf-nome" name="nome" maxlength="100" required autocomplete="name">
+  </div>
+  <div class="mb-3">
+    <label for="cf-email" class="form-label">La tua email</label>
+    <input type="email" class="form-control" id="cf-email" name="email" maxlength="150" required autocomplete="email" placeholder="nome@azienda.it">
+  </div>
+  <div class="mb-3">
+    <label for="cf-msg" class="form-label">Di cosa hai bisogno?</label>
+    <textarea class="form-control" id="cf-msg" name="messaggio" rows="5" maxlength="3000" required placeholder="Raccontaci in due righe il tuo progetto: cosa vuoi ottenere e a che punto sei."></textarea>
+  </div>
+  {% comment %} Campo trappola (honeypot): fuori schermo e fuori dalla tabulazione. NON metterlo con display:none, alcuni bot lo ignorano. {% endcomment %}
+  <div style="position:absolute;left:-9999px;height:0;overflow:hidden" aria-hidden="true">
+    <label for="cf-web">Non compilare</label>
+    <input type="text" id="cf-web" name="website" tabindex="-1" autocomplete="off">
+  </div>
+  {% comment %} Qui Turnstile disegna il suo riquadro (render esplicito nello script sotto). {% endcomment %}
+  {% if cf_mode == 'turnstile' %}<div id="cf-ts" class="mb-3"></div>{% endif %}
+  <button type="submit" class="btn btn-primary" id="cf-btn">Invia la richiesta</button>
+  <p class="cf-nota">Ti rispondiamo il prima possibile. I tuoi dati servono solo per risponderti.</p>
+  <p id="cf-esito" class="mt-3" role="status" aria-live="polite"></p>
+</form>
+</div>
+{% comment %} Libreria Turnstile di Cloudflare (render=explicit: la avviamo noi con turnstile.render). Se sostituisci Turnstile, togli anche la funzione avvia(). {% endcomment %}
+{% if cf_mode == 'turnstile' %}<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>{% endif %}
+<script>
+(function () {
+  var form = document.getElementById('cf-form');
+  var esito = document.getElementById('cf-esito');
+  var btn = document.getElementById('cf-btn');
+  {% comment %} jsonify scrive i valori tra virgolette e con gli escape giusti: non sostituirlo con la variabile "nuda". {% endcomment %}
+  var ENDPOINT = {{ cf_endpoint | jsonify }};
+  var SITEKEY = {{ cf_sitekey | jsonify }};
+  var MODE = {{ cf_mode | jsonify }};
+  {% comment %} t0 = istante di apertura della pagina, spedito come "t": il Worker scarta gli invii sotto i 3 secondi. Si riazzera dopo ogni invio. {% endcomment %}
+  var t0 = Date.now();
+  var wid = null;
+  {% comment %} mostra(testo, ok): scrive l'esito sotto il bottone; in rosso se ok e' falso. {% endcomment %}
+  function mostra(m, ok) { esito.textContent = m; esito.style.color = ok ? '' : '#b00020'; }
+  {% comment %} avvia(): la libreria Turnstile e' caricata in modo asincrono, quindi riprovo ogni 200 ms finche' esiste window.turnstile. {% endcomment %}
+  function avvia() {
+    if (MODE !== 'turnstile') return;
+    if (window.turnstile) { wid = window.turnstile.render('#cf-ts', { sitekey: SITEKEY }); }
+    else { setTimeout(avvia, 200); }
+  }
+  avvia();
+  {% comment %} ALTCHA: il Worker da' una sfida (GET ?challenge=1), il browser prova i numeri da 0 a maxnumber finche' lo SHA-256 di salt+numero
+     coincide con la sfida, poi rimanda il risultato (base64 di un JSON). Parte in background al caricamento, cosi' al clic su Invia e' gia' pronto.
+     Le sfide scadono dopo 10 minuti: se e' passato troppo tempo se ne calcola una nuova. {% endcomment %}
+  var pre = null, preT = 0;
+  function hex(b) { return Array.prototype.map.call(new Uint8Array(b), function (x) { return ('0' + x.toString(16)).slice(-2); }).join(''); }
+  async function altcha() {
+    var sep = ENDPOINT.indexOf('?') < 0 ? '?' : '&';
+    var c = await (await fetch(ENDPOINT + sep + 'challenge=1')).json();
+    if (!c.challenge) throw new Error('altcha');
+    var enc = new TextEncoder();
+    for (var n = 0; n <= c.maxnumber; n++) {
+      if (hex(await crypto.subtle.digest('SHA-256', enc.encode(c.salt + n))) === c.challenge) {
+        return btoa(JSON.stringify({ algorithm: c.algorithm, challenge: c.challenge, number: n, salt: c.salt, signature: c.signature }));
+      }
+    }
+    throw new Error('altcha');
+  }
+  function prepara() { preT = Date.now(); pre = altcha().catch(function () { return ''; }); }
+  if (MODE === 'altcha') prepara();
+  {% comment %} token(): una Promise col risultato della verifica (Turnstile: il token del riquadro; ALTCHA: la sfida risolta). Stringa vuota = non pronto. {% endcomment %}
+  function token() {
+    if (MODE === 'altcha') {
+      if (!pre || Date.now() - preT > 480000) prepara();
+      return pre.then(function (v) { if (v) return v; prepara(); return pre; });
+    }
+    return Promise.resolve(window.turnstile && wid !== null ? window.turnstile.getResponse(wid) : '');
+  }
+  {% comment %} Dopo ogni invio il token e' consumato: Turnstile lo rigenera con reset, ALTCHA ne calcola un'altra sfida. {% endcomment %}
+  function rinnova() { if (MODE === 'altcha') prepara(); else if (window.turnstile) window.turnstile.reset(wid); }
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    {% comment %} Controlli veloci lato browser (solo comodita': quelli veri sono nel Worker, perche' il browser si aggira). {% endcomment %}
+    if (!form.checkValidity()) { mostra('Compila nome, email e messaggio.', false); return; }
+    btn.disabled = true; mostra('Invio in corso...', true);
+    token().then(function (tk) {
+      if (!tk) { mostra(MODE === 'altcha' ? 'Verifica non riuscita. Riprova.' : 'Completa la verifica di sicurezza.', false); btn.disabled = false; return; }
+      {% comment %} Corpo "x-www-form-urlencoded": e' una richiesta semplice, il browser non fa il controllo preventivo (preflight). Il Worker legge questi stessi nomi. {% endcomment %}
+      var d = new URLSearchParams(new FormData(form));
+      d.set(MODE === 'altcha' ? 'altcha' : 'cf-turnstile-response', tk);
+      d.set('t', String(t0));
+      d.set('tipo', 'contatto-web');
+      d.set('sito', location.hostname);
+      d.set('pagina', location.pathname);
+      return fetch(ENDPOINT, { method: 'POST', body: d })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          {% comment %} Risposta del Worker: status "ok" oppure "error". {% endcomment %}
+          if (j.status === 'ok') { form.reset(); mostra('Ricevuto, grazie! Ti rispondiamo il prima possibile all\'email che ci hai lasciato.', true); }
+          else { mostra('Invio non riuscito. Riprova tra poco.', false); }
+          rinnova();
+          btn.disabled = false; t0 = Date.now();
+        });
+    }).catch(function () {
+      mostra('Errore di rete. Riprova.', false);
+      rinnova();
+      btn.disabled = false;
+    });
+  });
+})();
+</script>
+{% endif %}

@@ -1,0 +1,2 @@
+exclude_paths: "/admin/\n/_pages/\n/tag/\n/category/"
+include_lastmod: true

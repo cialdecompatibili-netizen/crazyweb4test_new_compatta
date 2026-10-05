@@ -1,0 +1,18 @@
+{
+  "sito": "mobilitaelettrica",
+  "pagine": [
+    {
+      "pagina": "_pages/home.md",
+      "front": {
+        "seo_title": "{title} | Ricarica auto elettriche",
+        "seo_description": "Wallbox e colonnine di ricarica per auto elettriche a casa, in condominio e in azienda: consulenza, installazione certificata e preventivo gratuito. Risposta entro 24 ore."
+      },
+      "righe": [
+        {"inizia_con": ["## Web Agency", "## La ricarica per la tua auto elettrica"], "nuova": "## La ricarica per la tua auto elettrica, a casa, in condominio e in azienda."},
+        {"inizia_con": ["Comunicazione, web marketing", "Ti aiutiamo a scegliere e installare"], "nuova": "Ti aiutiamo a scegliere e installare la soluzione di ricarica più adatta: wallbox domestiche, punti di ricarica per condomini e colonnine per aziende, hotel e parcheggi. Partiamo dalla tua auto, dal contatore e dall'uso che ne fai, così la potenza giusta costa il giusto, senza sprechi."},
+        {"inizia_con": ["Un team unico di professionisti", "Pensiamo noi alla parte tecnica"], "nuova": "Pensiamo noi alla parte tecnica e burocratica: sopralluogo, progetto elettrico, installazione a regola d'arte con dichiarazione di conformità e, quando serve, supporto per le pratiche condominiali e per gli incentivi. Rispondiamo entro 24 ore, festivi esclusi, e il preventivo è gratuito."},
+        {"inizia_con": ["**Vuoi far crescere il tuo business?**", "**Stai per passare all'elettrico?**"], "nuova": "**Stai per passare all'elettrico?** Scrivici su WhatsApp o richiedi un preventivo: troviamo insieme la ricarica giusta per te."}
+      ]
+    }
+  ]
+}

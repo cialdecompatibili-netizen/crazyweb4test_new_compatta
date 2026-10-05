@@ -1,0 +1,9 @@
+# Titolo e descrizione personalizzati per ogni categoria di articoli, mostrati nella pagina
+# /blog/category/<nome>/ (generata da jekyll-archives). Letto da _layouts/archive.liquid come
+# site.data.category_meta[page.title] (page.title = nome esatto della categoria, es. "servizi").
+# Editabile da admin > Categorie articoli (bottone "Modifica" accanto a Rinomina/Elimina).
+# Una categoria senza voce qui (o con campi vuoti) usa il testo automatico di default: nessuna
+# pagina si rompe. Vedi admin/claude.md.
+servizi:
+  title: ""
+  desc: "Una guida pratica ai servizi che offriamo: soluzioni concrete, spiegate senza fronzoli, per aiutarti a capire subito di cosa hai bisogno e come possiamo darti una mano."

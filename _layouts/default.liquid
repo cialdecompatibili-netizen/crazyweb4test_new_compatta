@@ -1,0 +1,112 @@
+<!doctype html>
+{%- comment -%}
+  OVERRIDE locale di al_folio_core/_layouts/default.liquid (2026-09-25).
+  UNICA differenza dall'originale del gem: il blocco "SITO OFFLINE" subito dopo <body>.
+  Il flag NON sta in _config.yml (richiederebbe modificare un file a mano): viene dal modulo
+  "sito-offline" (modules_source/sito-offline/), gestito dall'admin in Moduli > Configura.
+  Valore letto da site.data.modules['sito-offline'].offline (file _data/modules/sito-offline.yml,
+  scritto da A.mdConfigSave). Se true, la pagina mostra SOLO il messaggio di manutenzione
+  (site.data.modules['sito-offline'].messaggio, con un default se vuoto) - nessun
+  header/menu/contenuto/footer - per QUALSIASI visitatore, amministratore compreso: non e'
+  un'anteprima privata, e' un blocco totale prima del lancio.
+  Il resto del file e' identico all'originale della gem al_folio_core (v1.0.15): se la
+  gem aggiorna questo layout, questo override smette di ricevere gli aggiornamenti finche'
+  non viene risincronizzato a mano.
+{%- endcomment -%}
+{%- assign offline_cfg = site.data.modules['sito-offline'] -%}
+{%- comment -%}
+  al_rtl owns the language and direction attributes when it is installed, because
+  `dir` has to sit on <html> for the browser's bidi handling, CSS logical
+  properties and Tailwind's rtl: variant to apply to the whole document.
+
+  Captured into a variable rather than wrapping the <html> tag in a conditional:
+  a conditional there stops the tag being a single static element, and Prettier
+  then re-indents the entire document body. The guard keeps this parse-safe —
+  without the plugin the tag does not exist and Liquid fails on every page.
+{%- endcomment -%}
+{%- capture html_attributes -%}
+  {%- if site.plugins contains 'al_rtl' -%}
+    {%- include plugins/al_rtl_html_attrs.liquid -%}
+  {%- else -%}
+    lang="{{ site.lang }}"
+  {%- endif -%}
+{%- endcapture -%}
+<html {{ html_attributes }}>
+  <!-- Head -->
+  <head>
+    {% if page.redirect %}
+      {% if page.redirect == true %}
+        {% assign redirect = site.baseurl | append: '/' %}
+      {% elsif page.redirect contains '://' %}
+        {% assign redirect = page.redirect %}
+      {% else %}
+        {% assign redirect = page.redirect | relative_url %}
+      {% endif %}
+      <meta http-equiv="refresh" content="3; url={{ redirect }}">
+    {% endif %}
+    {% include head.liquid %}
+  </head>
+
+  <!-- Body -->
+  <body class="{% if site.navbar_fixed %}fixed-top-nav{% endif %} {% unless site.footer_fixed %}sticky-bottom-footer{% endunless %}">
+    {% if offline_cfg.offline == 'true' or offline_cfg.offline == true %}
+      <!-- SITO OFFLINE: blocco totale prima del lancio, vedi commento in cima al file -->
+      <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;font-family:sans-serif;">
+        <h1 style="font-size:1.8rem;margin-bottom:0.5rem;">Sito in arrivo</h1>
+        <p style="font-size:1rem;color:#666;max-width:420px;white-space:pre-line;">
+          {{ offline_cfg.messaggio | default: "Stiamo preparando il lancio. Torna a trovarci a breve." }}
+        </p>
+      </div>
+    {% else %}
+      <!-- Header -->
+      {% include header.liquid %}
+
+      <!-- Content -->
+      <div class="container mt-5" role="main">
+        {% if page.toc and page.toc.sidebar %}
+          {% assign toc_collapse = page.toc.collapse | default: 'expanded' %}
+          {% assign toc_collapse_depth = page.toc.collapse_depth | default: '' %}
+          {% if page.toc.sidebar == 'right' %}
+            <div class="row">
+              <!-- main content area -->
+              <div class="col-sm-9">{{ content }}</div>
+              <!-- sidebar, which will move to the top on a small screen -->
+              <div class="col-sm-3">
+                <nav
+                  id="toc-sidebar"
+                  class="sticky-top toc toc-sidebar"
+                  aria-label="Table of contents"
+                  data-toc-collapse="{{ toc_collapse }}"
+                  data-toc-collapse-depth="{{ toc_collapse_depth }}"
+                ></nav>
+              </div>
+            </div>
+          {% else %}
+            <div class="row">
+              <!-- sidebar, which will move to the top on a small screen -->
+              <div class="col-sm-3">
+                <nav
+                  id="toc-sidebar"
+                  class="sticky-top toc toc-sidebar"
+                  aria-label="Table of contents"
+                  data-toc-collapse="{{ toc_collapse }}"
+                  data-toc-collapse-depth="{{ toc_collapse_depth }}"
+                ></nav>
+              </div>
+              <!-- main content area -->
+              <div class="col-sm-9">{{ content }}</div>
+            </div>
+          {% endif %}
+        {% else %}
+          {{ content }}
+        {% endif %}
+      </div>
+
+      <!-- Footer -->
+      {% include footer.liquid %}
+    {% endif %}
+
+    <!-- JavaScripts -->
+    {% include scripts.liquid %}
+  </body>
+</html>

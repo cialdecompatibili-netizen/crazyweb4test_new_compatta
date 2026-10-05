@@ -1,0 +1,178 @@
+---
+layout: default
+---
+{% assign year = page.date | date: '%Y' %}
+{% assign tags = page.tags | join: '' %}
+{% assign categories = page.categories | join: '' %}
+{% comment %}
+  PUNTO CRITICO: "url_beginning" controlla se la pagina corrente sta sotto "/blog/" (i primi 6
+  caratteri dell'URL). Serve perche' questo stesso layout "post" viene riusato anche per le
+  collection "books", "news" e "teachings" (vedi _config.yml collections), che NON hanno le
+  pagine di archivio /blog/<anno>/, /blog/tag/... : senza questo controllo, un libro o una notizia
+  linkerebbe a un archivio blog inesistente invece di mostrare solo il testo semplice.
+{% endcomment %}
+{% assign url_beginning = page.url | slice: 0, 6 %}
+{% comment %}
+  I post veri (collection "posts") contano SEMPRE come blog, qualunque sia il loro URL (un permalink
+  o una regola per categoria li puo' portare fuori da /blog/) e devono linkare anno e categoria agli archivi
+  /blog/<anno>/ e /blog/category/<cat>/. I SERVIZI non passano di qui: sono la collection "servizi" con
+  il loro layout (_layouts/servizio.liquid).
+  NON TOGLIERE la riga qui sotto e non ripristinare il layout originale: senza, anno e categoria
+  tornano testo semplice e nessun errore te lo segnala (CLAUDE.md > Punti critici n.4).
+{% endcomment %}
+{% if page.collection == 'posts' %}{% assign url_beginning = '/blog/' %}{% endif %}
+
+{% if page._styles %}
+  <!-- Page/Post style -->
+  <style type="text/css">
+    {{ page._styles }}
+  </style>
+{% endif %}
+
+<div class="post">
+  <header class="post-header">
+    <h1 class="post-title">{{ page.title }}</h1>
+    <p class="post-meta">
+      Creato il {{ page.date | data_it: '%d %B %Y' }}
+      {% if page.author %}da {{ page.author }}{% endif %}
+      {% comment %}
+        PUNTO CRITICO: "last_date" prova prima last_modified_at (standard Jekyll, es. da un
+        plugin git-based) e solo se assente usa last_updated (campo custom nel front matter).
+        Il doppio fallback evita di dover scegliere un unico nome campo per sempre: qualsiasi
+        post puo' usare l'uno o l'altro e la data "ultimo aggiornamento" compare comunque.
+      {% endcomment %}
+      {% assign last_date = page.last_modified_at | default: page.last_updated %}
+      {% if last_date %}, ultimo aggiornamento il {{ last_date | data_it: '%d %B %Y' }}{% endif %}
+      {% if page.meta %}• {{ page.meta }}{% endif %}
+    </p>
+    <p class="post-tags">
+      {% if url_beginning == '/blog/' %}
+        <a href="{{ year | prepend: '/blog/' | relative_url }}"> <i class="fa-solid fa-calendar fa-sm"></i> {{ year }} </a>
+      {% else %}
+        <i class="fa-solid fa-calendar fa-sm"></i> {{ year }}
+      {% endif %}
+      {% if tags != '' %}
+        &nbsp; &middot; &nbsp;
+        {% for tag in page.tags %}
+          {% if url_beginning == '/blog/' %}
+            <a href="{{ tag | slugify | prepend: '/blog/tag/' | relative_url }}"> <i class="fa-solid fa-hashtag fa-sm"></i> {{ tag }}</a>
+          {% else %}
+            <i class="fa-solid fa-hashtag fa-sm"></i> {{ tag }}
+          {% endif %}
+          {% unless forloop.last %}
+            &nbsp;
+          {% endunless %}
+        {% endfor %}
+      {% endif %}
+
+      {% if categories != '' %}
+        &nbsp; &middot; &nbsp;
+        {% for category in page.categories %}
+          {% if url_beginning == '/blog/' %}
+            <a href="{{ category | slugify | prepend: '/blog/category/' | relative_url }}"> <i class="fa-solid fa-tag fa-sm"></i> {{ category -}}</a>
+          {% else %}
+            <i class="fa-solid fa-tag fa-sm"></i> {{ category }}
+          {% endif %}
+          {% unless forloop.last %}
+            &nbsp;
+          {% endunless %}
+        {% endfor %}
+      {% endif %}
+    </p>
+  </header>
+
+  <article class="post-content">
+    {% comment %}
+      PUNTO CRITICO: "page.toc.beginning" viene impostato true automaticamente per TUTTI i post
+      da _config.yml (blocco "defaults" con type: "posts"): questo e' il gancio che lo legge e
+      stampa l'indice. Un singolo post puo' disattivarlo mettendo "toc: false" nel proprio front
+      matter, che ha sempre la precedenza sul default globale.
+    {% endcomment %}
+    {% comment %}
+      COPERTINA DELL'ARTICOLO: l'immagine in evidenza (front matter "thumbnail") compare di default anche dentro l'articolo, sopra il testo.
+      Si nasconde con "thumbnail_hide: true" (spunta "Non visualizzarla nell'articolo" nell'editor admin): resta nell'elenco del blog.
+      Vale solo per i post veri (collection posts); alt = thumbnail_alt, se vuoto il titolo.
+    {% endcomment %}
+    {% if page.collection == 'posts' and page.thumbnail and page.thumbnail_hide != true and page.thumbnail_hide != 'true' %}
+      {% assign cop_alt = page.thumbnail_alt | default: page.title %}
+      <style>.post-cover{margin:0 0 1.5rem}.post-cover img{display:block;width:100%;aspect-ratio:16/9;max-height:420px;object-fit:cover;object-position:center 30%;border-radius:.375rem}@media(max-width:575.98px){.post-cover img{aspect-ratio:4/3}}.post-cover img{cursor:zoom-in}.post-cover-zoom{position:fixed;top:0;right:0;bottom:0;left:0;z-index:2000;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:1rem;cursor:zoom-out}.post-cover-zoom img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}</style>
+      {% comment %}
+        MINIATURA LEGGERA: l'admin crea assets/img/cover/<nome>.jpg (1200 px, JPEG ~80%) quando scegli l'immagine in evidenza. Qui si usa quella;
+        se non esiste (articoli vecchi) si ripiega sull'originale. "thumbnail_hd: true" (spunta admin) forza l'originale in alta definizione.
+      {% endcomment %}
+      {% assign cop_src = page.thumbnail %}
+      {% unless page.thumbnail_hd == true or page.thumbnail_hd == 'true' %}
+        {% assign cop_fn = page.thumbnail | split: '/' | last %}
+        {% assign cop_ext = cop_fn | split: '.' | last %}
+        {% assign cop_n = cop_fn.size | minus: cop_ext.size | minus: 1 %}
+        {% assign cop_base = cop_fn | slice: 0, cop_n %}
+        {% assign cop_rel = 'assets/img/cover/' | append: cop_base | append: '.jpg' %}
+        {% assign cop_abs = '/' | append: cop_rel %}
+        {% assign cop_file = site.static_files | where: 'path', cop_abs | first %}
+        {% if cop_file %}{% assign cop_src = cop_rel %}{% endif %}
+      {% endunless %}
+      {% comment %}
+        INGRANDIMENTO AL CLIC: la copertina in pagina e' ritagliata (16:9); al clic si apre a tutto schermo la STESSA immagine LEGGERA
+        (assets/img/cover/<nome>.jpg, 1200 px) ma INTERA, senza ritaglio. PUNTO CRITICO: NON caricare l'originale (anche 12 MB: lento,
+        specie da cellulare); l'originale si usa solo se l'autore spunta thumbnail_hd (allora cop_src e' gia' l'originale).
+        Chiusura: clic, Esc. Niente librerie: vale anche se enable_medium_zoom cambia.
+        PUNTO CRITICO: nello script NON scrivere graffe doppie ne' graffa+percento: Liquid le leggerebbe come codice.
+      {% endcomment %}
+      <figure class="post-cover"><img src="{{ cop_src | relative_url }}" alt="{{ cop_alt | escape }}" loading="eager" decoding="async" tabindex="0" role="button" title="Clicca per ingrandire"></figure>
+      <script>
+      (function () {
+        var im = document.querySelector('.post-cover img');
+        if (!im) return;
+        function apri() {
+          var o = document.createElement('div');
+          o.className = 'post-cover-zoom';
+          o.setAttribute('role', 'dialog');
+          o.setAttribute('aria-label', 'Immagine ingrandita');
+          var g = document.createElement('img');
+          g.alt = im.alt;
+          g.src = im.currentSrc || im.src;
+          o.appendChild(g);
+          function chiudi() { o.remove(); document.removeEventListener('keydown', tasto); document.documentElement.style.overflow = ''; }
+          function tasto(e) { if (e.key === 'Escape') chiudi(); }
+          o.addEventListener('click', chiudi);
+          document.addEventListener('keydown', tasto);
+          document.documentElement.style.overflow = 'hidden';
+          document.body.appendChild(o);
+        }
+        im.addEventListener('click', apri);
+        im.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); apri(); } });
+      })();
+      </script>
+    {% endif %}
+    {% if page.toc and page.toc.beginning %}
+      <div id="table-of-contents">
+        {% toc %}
+      </div>
+      <hr>
+    {% endif %}
+    <div id="markdown-content">
+      {{ content }}
+    </div>
+  </article>
+
+  {% if page.citation %}
+    {% include citation.liquid %}
+  {% endif %}
+
+  {% if page.related_publications %}
+    <h2>Riferimenti</h2>
+    <div class="publications">
+      {% bibliography --group_by none --cited_in_order %}
+    </div>
+  {% endif %}
+
+  {% if site.related_blog_posts and site.related_blog_posts.enabled %}
+    {% if page.related_posts == null or page.related_posts %}
+      {% include related_posts.liquid %}
+    {% endif %}
+  {% endif %}
+
+  {% if site.plugins contains 'al_comments' %}
+    {% include plugins/al_comments.liquid %}
+  {% endif %}
+</div>

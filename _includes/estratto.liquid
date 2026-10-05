@@ -1,0 +1,41 @@
+{% comment %}
+  ESTRATTO + "Leggi tutto" per l'elenco del blog (stile WordPress). Uso: {% include estratto.liquid post=post %}
+  - Marcatore manuale: scrivendo <!--more--> nel testo, l'estratto e' tutto quello che sta PRIMA. Mai tagliato.
+  - Senza marcatore: testo pulito (via style, script, figure, nav; niente HTML), circa 260 caratteri, tagliato
+    all'ULTIMA FINE DI FRASE (. ! ?) dentro il limite. Se non c'e' una frase di almeno 80 caratteri, taglia per parole con "...".
+  PUNTI CRITICI (CLAUDE.md, sezione Estratto): (1) il blocco 'marked/pieces' usa un carattere separatore speciale NON ASCII: non ritrascriverlo
+  a mano e non salvare il file con un editor che cambia codifica (sempre UTF-8, a-capo CRLF): si romperebbe il taglio a fine frase senza errori.
+  (2) La lista 'kill' toglie style/script/figure/nav/pre PRIMA di strip_html: senza, nell'estratto finisce codice o CSS. (3) 260 e 80 sono i
+  limiti (caratteri): se li cambi, controlla l'elenco blog in locale. (4) Il link rispetta 'redirect' (esterno = nuova scheda), come il titolo in blog.md.
+  - Testo corto (sotto il limite): mostrato intero e SENZA bottone: Leggi tutto compare solo se l'estratto e' tagliato (automatico o manuale). Il campo "description" NON viene piu' usato qui (solo se il post e' vuoto).
+{% endcomment %}
+{%- assign raw = include.post.content -%}
+{%- assign manual = false -%}{%- assign more = false -%}
+{%- if raw contains '<!--more-->' -%}{%- assign manual = true -%}{%- assign more = true -%}{%- assign raw = raw | split: '<!--more-->' | first -%}{%- endif -%}
+{%- assign kill = 'style,script,figure,nav,pre' | split: ',' -%}
+{%- for t in kill -%}
+  {%- assign op = '<' | append: t -%}
+  {%- assign cl = '</' | append: t | append: '>' -%}
+  {%- if raw contains op -%}
+    {%- assign segs = raw | split: op -%}
+    {%- capture cleaned -%}{{ segs[0] }}{%- for s in segs offset: 1 -%}{%- assign tail = s | split: cl -%}{%- if tail.size > 1 -%}{%- for u in tail offset: 1 -%}{{ u }}{%- endfor -%}{%- endif -%}{%- endfor -%}{%- endcapture -%}
+    {%- assign raw = cleaned -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- assign text = raw | replace: '</p>', ' </p>' | replace: '</h1>', ' </h1>' | replace: '</h2>', ' </h2>' | replace: '</h3>', ' </h3>' | replace: '</h4>', ' </h4>' | replace: '</li>', ' </li>' | replace: '<br', ' <br' | strip_html | strip_newlines | normalize_whitespace | strip -%}
+{%- assign out = text -%}
+{%- if manual == false and text.size > 260 -%}
+  {%- assign win = text | truncate: 260, '' -%}
+  {%- assign marked = win | replace: '. ', '.Â§' | replace: '! ', '!Â§' | replace: '? ', '?Â§' -%}
+  {%- assign pieces = marked | split: 'Â§' -%}
+  {%- assign keep = pieces.size | minus: 1 -%}
+  {%- capture cut -%}{%- for p in pieces limit: keep -%}{{ p }} {%- endfor -%}{%- endcapture -%}
+  {%- assign cut = cut | strip -%}
+  {%- assign more = true -%}{%- if cut.size >= 80 -%}{%- assign out = cut -%}{%- else -%}{%- assign out = text | truncatewords: 35, '...' -%}{%- endif -%}
+{%- endif -%}
+{%- if out == '' -%}{%- assign out = include.post.description -%}{%- endif -%}
+{%- if include.post.redirect == blank -%}{%- assign href = include.post.url | relative_url -%}
+{%- elsif include.post.redirect contains '://' -%}{%- assign href = include.post.redirect -%}
+{%- else -%}{%- assign href = include.post.redirect | relative_url -%}{%- endif -%}
+<p class="post-excerpt">{{ out }}</p>
+{%- if more -%}<p class="post-readmore"><a class="readmore" href="{{ href }}"{% if include.post.redirect contains '://' %} target="_blank"{% endif %}>Leggi tutto<svg width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5h12M9 1l4 4-4 4"/></svg></a></p>{%- endif -%}

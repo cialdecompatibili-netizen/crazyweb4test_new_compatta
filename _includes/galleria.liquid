@@ -1,0 +1,26 @@
+{%- comment -%} GALLERIA FOTO. Dati: _data/gallerie/<id>.json (li crea l'admin > Gallerie). Nel testo si inserisce con include galleria.liquid e parametro id. Tutto l'output esce su UNA riga (strip_newlines): kramdown non lo rompe con righe vuote o rientri. CSS/JS in assets/galleria/, caricati una volta sola per pagina. Vedi CLAUDE.md > Gallerie. {%- endcomment -%}
+{%- assign galleria_g = site.data.gallerie[include.id] -%}
+{%- if galleria_g and galleria_g.immagini.size > 0 -%}
+{%- assign galleria_n = 3 -%}
+{%- if galleria_g.layout == '2col' or galleria_g.layout == '2-1' -%}{%- assign galleria_n = 2 -%}{%- elsif galleria_g.layout == '1' -%}{%- assign galleria_n = 1 -%}{%- endif -%}
+{%- assign galleria_last = galleria_n | minus: 1 -%}
+{%- capture galleria_html -%}
+<div class="galleria galleria--{{ galleria_g.layout | default: '3col' }}">
+{%- unless galleria_assets_loaded -%}{%- assign galleria_assets_loaded = true -%}<link rel="stylesheet" href="{{ '/assets/galleria/galleria.css' | relative_url }}"><script src="{{ '/assets/galleria/galleria.js' | relative_url }}" defer></script>{%- endunless -%}
+{%- for im in galleria_g.immagini -%}
+{%- assign pos = forloop.index0 | modulo: galleria_n -%}
+{%- if pos == 0 -%}<div class="row justify-content-sm-center">{%- endif -%}
+{%- case galleria_g.layout -%}
+{%- when '2col' -%}{%- assign col = 'col-sm-6' -%}
+{%- when '2-1' -%}{%- assign rowno = forloop.index0 | divided_by: 2 | modulo: 2 -%}{%- if rowno == pos -%}{%- assign col = 'col-sm-8' -%}{%- else -%}{%- assign col = 'col-sm-4' -%}{%- endif -%}
+{%- when '1' -%}{%- assign col = 'col-sm-12' -%}
+{%- else -%}{%- assign col = 'col-sm-4' -%}
+{%- endcase -%}
+{%- assign cap = im.didascalia | escape -%}
+<div class="{{ col }} mt-3 mt-md-0"><figure class="galleria-fig"><a href="{{ im.src | relative_url }}" data-galleria="{{ include.id }}" data-cap="{{ cap }}"><img src="{{ im.src | relative_url }}" alt="{{ cap }}" loading="lazy" class="rounded z-depth-1"></a>{%- if cap != '' -%}<figcaption class="caption">{{ cap }}</figcaption>{%- endif -%}</figure></div>
+{%- if pos == galleria_last or forloop.last -%}</div>{%- endif -%}
+{%- endfor -%}
+</div>
+{%- endcapture -%}
+{{ galleria_html | strip_newlines }}
+{%- endif -%}

@@ -1,0 +1,67 @@
+{% comment %}
+  =====================================================================================
+  MODULI - ESECUZIONE DEGLI AGGANCI ("hook", come in PrestaShop)   [file NUOVO, non e' un override della gem]
+  =====================================================================================
+  Cosa fa: per il punto di aggancio richiesto (include.hook = 'head' | 'footer') stampa, uno dopo
+  l'altro, il contenuto dell'include di OGNI modulo installato E ATTIVO che dichiara quell'aggancio.
+  Chi lo chiama (una riga per punto, vedi anche admin/claude.md sez. 11):
+    - _includes/metadata.liquid  ->  include di modules_hook.liquid con hook='head'    (dentro <head>)
+    - _includes/footer.liquid    ->  include di modules_hook.liquid con hook='footer' (fine <body>)
+  Per aggiungere un NUOVO punto di aggancio basta un'altra riga simile nel template giusto, e il nome
+  usato e' subito valido nei module.json. Non serve toccare questo file.
+
+  DATI LETTI: site.data.modules_registry.installed  (file _data/modules_registry.yml)
+    Lo scrive SOLO l'admin (admin/admin-modules.js). Ogni voce: { enabled: true|false, hooks: { head: "x.liquid" }, ... }
+    Il nome del file e' modules_registry e NON modules di proposito: la cartella _data/modules/<slug>/
+    contiene i dati dei singoli moduli e Jekyll la legge come site.data.modules; un file modules.yml
+    entrerebbe in conflitto con quella cartella. [DOC Jekyll, jekyllrb.com/docs/datafiles: "Data files
+    can also be placed in sub-folders of the _data folder. Each folder level will be added to a
+    variable's namespace." Verificato: _data/modules/<slug>/x.yml diventa site.data.modules.<slug>.x;
+    _data/modules_registry.yml (file, non cartella) diventa site.data.modules_registry direttamente.]
+
+  COSA SUCCEDE SE...
+    - un modulo e' DISATTIVATO (enabled: false): il suo aggancio NON viene stampato. Le sue pagine
+      sono nascoste con "published: false" (lo fa l'admin), i suoi file restano nel repo.
+    - il file dichiarato in "hooks" NON esiste in _includes/modules/<slug>/: Jekyll dice "Could not locate
+      the included file" e l'INTERA BUILD DEL SITO FALLISCE (il sito online resta quello vecchio).
+      L'admin lo impedisce all'installazione (controlla che ogni hook esista nello zip). Se succede
+      lo stesso (file cancellato a mano): Moduli > Disattiva o Disinstalla, i commit funzionano anche a build rotta.
+    - un modulo ha un errore Liquid nel suo include: build fallita, stesso rimedio.
+
+  Nome dell'include preso da una VARIABILE (tag include con il nome tra doppie graffe)
+    [DOC Jekyll, jekyllrb.com/docs/includes, sez. "Using variables names for the include file":
+    sintassi ESATTA verificata sulla pagina ufficiale: {% include {{ page.my_variable }} %} — qui
+    si usa la stessa forma con una variabile locale (mod_include_path) invece di page.*, che e'
+    equivalente: la doc dice solo che il nome puo' essere "specified as a variable instead of an
+    actual file name", non che debba venire dal front matter. Verificato anche su jekyllrb.com/docs/templates
+    ("Templates - Jekyll": sintassi identica {% include {{my_variable}} %}). La variabile deve
+    contenere un percorso RELATIVO a _includes/ (qui costruito con capture): per questo modulo NON
+    e' un pattern al-folio, e' Jekyll puro, quindi funziona indipendentemente dalla versione della gem.
+
+  PARAMETRI che il modulo riceve nel suo include (accessibili come include.<nome>):
+    include.slug        nome cartella del modulo (es. "esempio-banner")
+    include.assets_url  URL della cartella assets/modules/<slug>/ gia' con baseurl (mai scrivere a mano il baseurl)
+    include.data        contenuto di _data/modules/<slug>/*.yml  (es. include.data.settings.text). Puo' essere vuoto.
+  L'URL degli asset usa | relative_url [DOC Jekyll filtri Liquid] cosi' segue baseurl di _config.yml (regola
+  "zero hardcoded", claude.md sez. 0).
+
+  Sicurezza: hook_file e' validato dall'admin (solo nome file .liquid/.html, niente "/" ne' ".."), e Jekyll
+  stesso rifiuta include che escono da _includes/. Ma il CODICE del modulo va online su tutto il sito:
+  installare solo moduli di cui ci si fida.
+{% endcomment %}
+{%- assign mod_list = site.data.modules_registry.installed -%}
+{%- if mod_list -%}
+  {%- for mod_entry in mod_list -%}
+    {%- assign mod_slug = mod_entry[0] -%}
+    {%- assign mod_info = mod_entry[1] -%}
+    {%- if mod_info.enabled == true and mod_info.hooks -%}
+      {%- assign mod_hook_file = mod_info.hooks[include.hook] -%}
+      {%- if mod_hook_file -%}
+        {%- capture mod_include_path -%}modules/{{ mod_slug }}/{{ mod_hook_file }}{%- endcapture -%}
+        {%- capture mod_assets_url -%}{{ '/assets/modules/' | append: mod_slug | relative_url }}{%- endcapture -%}
+        {%- assign mod_data = site.data.modules[mod_slug] -%}
+        {% include {{ mod_include_path }} slug=mod_slug assets_url=mod_assets_url data=mod_data %}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}

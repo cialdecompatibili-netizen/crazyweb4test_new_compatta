@@ -1,0 +1,85 @@
+---
+layout: null
+sitemap: false
+---
+{%- comment -%}
+  MODULO SITEMAP - non usa la gem jekyll-sitemap (quella richiede Gemfile + plugins in _config.yml,
+  cioe' build-time; il sistema hook di questo admin agisce solo a runtime via _includes, senza
+  toccare Gemfile). Questo e' Jekyll puro: layout null fa passare il file per Liquid senza applicare
+  nessun layout del tema. Fonte: DOC Jekyll, jekyllrb.com/docs/pages, front matter layout null.
+  sitemap: false e' solo per compatibilita' futura con jekyll-sitemap, se mai installata insieme.
+
+  Elenca site.pages (pagine statiche), site.posts (articoli) e site.documents (tutti i documenti
+  di tutte le collezioni con output true: projects, news, teachings, books - una collezione nuova
+  entra da sola, non serve elencarla). Fonte: DOC Jekyll, jekyllrb.com/docs/variables.
+  Esclude pagine con redirect, con sitemap false nel front matter, e questa stessa pagina.
+
+  CONFIGURAZIONE (bottone Configura nell'admin, scrive _data/modules/sitemap.yml):
+    exclude_paths    un percorso per riga; un URL viene escluso se CONTIENE uno di questi testi
+                     (es. "/tag/" esclude /blog/tag/math/). Default: /admin/ /_pages/ /tag/ /category/ /page/
+    include_lastmod  true/false: stampa <lastmod> per posts e documenti quando hanno una data.
+  Se il file di configurazione non esiste ancora (mai salvato), valgono i default qui sotto.
+  I valori con piu' righe arrivano gia' con gli a-capo veri (vedi parseFlatYaml in admin-modules.js),
+  quindi il modulo li converte con newline_to_br e spezza su un separatore vero.
+{%- endcomment -%}
+{%- assign cfg = site.data.modules.sitemap -%}
+{%- if cfg.exclude_paths -%}
+  {%- comment -%} In Liquid la stringa con backslash+n NON e un a-capo: non spezza nulla (bug visto: contava solo la prima riga). Si converte l a-capo in un separatore vero e si spezza su quello. {%- endcomment -%}
+  {%- assign sm_norm = cfg.exclude_paths | replace: '\r', '' | newline_to_br | replace: '<br />', '|' | strip_newlines -%}
+  {%- assign sm_excl = sm_norm | split: '|' -%}
+{%- else -%}
+  {%- assign sm_excl = "/admin/|/_pages/|/tag/|/category/|/page/" | split: "|" -%}
+{%- endif -%}
+{%- if cfg.include_lastmod == false -%}
+  {%- assign sm_lastmod = false -%}
+{%- else -%}
+  {%- assign sm_lastmod = true -%}
+{%- endif -%}
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{%- for p in site.pages -%}
+  {%- if p.redirect or p.sitemap == false or p.url == page.url -%}{%- continue -%}{%- endif -%}
+  {%- assign sm_skip = false -%}
+  {%- for x in sm_excl -%}
+    {%- assign xt = x | strip -%}
+    {%- if xt != "" and p.url contains xt -%}{%- assign sm_skip = true -%}{%- endif -%}
+  {%- endfor -%}
+  {%- unless sm_skip -%}
+  <url>
+    <loc>{{ p.url | absolute_url }}</loc>
+  </url>
+  {%- endunless -%}
+{%- endfor -%}
+{%- for post in site.posts -%}
+  {%- comment -%} Come per le pagine: un articolo con sitemap: false o con redirect: (rimanda altrove, es. a un PDF) non entra in sitemap. Senza questa riga sitemap: false sui post veniva ignorato. {%- endcomment -%}
+  {%- if post.redirect or post.sitemap == false -%}{%- continue -%}{%- endif -%}
+  {%- assign sm_skip = false -%}
+  {%- for x in sm_excl -%}
+    {%- assign xt = x | strip -%}
+    {%- if xt != "" and post.url contains xt -%}{%- assign sm_skip = true -%}{%- endif -%}
+  {%- endfor -%}
+  {%- unless sm_skip -%}
+  <url>
+    <loc>{{ post.url | absolute_url }}</loc>
+    {%- if sm_lastmod %}
+    <lastmod>{{ post.date | date_to_xmlschema }}</lastmod>
+    {%- endif %}
+  </url>
+  {%- endunless -%}
+{%- endfor -%}
+{%- for doc in site.documents -%}
+  {%- if doc.sitemap == false -%}{%- continue -%}{%- endif -%}
+  {%- comment -%} site.documents INCLUDE anche i post (gia' elencati sopra da site.posts): senza questo salto ogni articolo compariva 2 volte. {%- endcomment -%}
+  {%- if doc.collection == "posts" -%}{%- continue -%}{%- endif -%}
+  {%- assign sm_skip = false -%}
+  {%- for x in sm_excl -%}
+    {%- assign xt = x | strip -%}
+    {%- if xt != "" and doc.url contains xt -%}{%- assign sm_skip = true -%}{%- endif -%}
+  {%- endfor -%}
+  {%- unless sm_skip -%}
+  <url>
+    <loc>{{ doc.url | absolute_url }}</loc>
+  </url>
+  {%- endunless -%}
+{%- endfor -%}
+</urlset>

@@ -1,0 +1,276 @@
+{% comment %}
+  OVERRIDE locale di al_folio_core/_includes/metadata.liquid (v1.0.15). Differenze dall'originale:
+  campi SEO opzionali nel front matter, gestiti dall'admin (vedi admin/claude.md sez. 0d):
+    seo_title       -> testo del <title>. Se vuoto: comportamento originale ("<title pagina> | <titolo sito>").
+    seo_description -> meta description. Se vuota: prima "description" (originale), poi un estratto
+                       automatico del testo (150 caratteri), poi la description del sito.
+  NON usare "description" per la SEO: in al-folio e' anche il sottotitolo VISIBILE nella pagina.
+  Le variabili seo_ttl / seo_desc sotto sono usate in <title>, meta description, OpenGraph, Twitter e schema.org.
+  SECONDA differenza dall'originale (in FONDO al file): aggancio moduli "head", una riga
+  (include di modules_hook.liquid con hook='head'). Funziona perche' head.liquid della gem include questo file
+  DENTRO <head> [DEDOTTO dalla gem al_folio_core-1.0.15, _includes/head.liquid riga 2 "include metadata.liquid";
+  NON documentato: se un aggiornamento della gem sposta o toglie quell'include, i moduli con hook "head" smettono
+  di caricare CSS/JS senza errori]. Vedi _includes/modules_hook.liquid e admin/claude.md sez. 11.
+  TERZA differenza dall'originale (SEO strutturato, CLAUDE.md punto 15): (a) variabili seo_canonical/is_post/is_service (il canonical lo emette GIA' head.liquid della gem: NON aggiungerne un secondo);
+  (b) og:type/twitter:card/og:locale corretti; (c) schema.org riscritto come un solo @graph (Organization, WebSite, Service/BlogPosting/WebPage,
+  BreadcrumbList) con dati da _config.yml > schema_org. Il generatore sameAs originale e' stato TOLTO: leggeva _data/socials.yml, ancora quello del
+  template (profili di Einstein). Controllo dopo ogni build: python verifica_seo.py --build <cartella _site>.
+{% endcomment %}
+{% assign seo_desc = page.seo_description %}
+{% if seo_desc == null or seo_desc == '' %}{% assign seo_desc = page.description %}{% endif %}
+{% if seo_desc == null or seo_desc == '' %}
+  {% comment %}
+    L'estratto automatico si fa SOLO se il sorgente non contiene codice Liquid (tag graffa-percento o
+    doppia graffa). Pagine come /blog/ sono template: il loro page.content e' codice, non testo, e
+    finirebbe nella meta description (bug reale visto online sulla pagina blog). In quel caso si passa
+    al fallback del sito.
+  {% endcomment %}
+  {% assign has_liquid = false %}
+  {% if page.content contains '{%' or page.content contains '{{' %}{% assign has_liquid = true %}{% endif %}
+  {% if page.content and page.content != '' and has_liquid == false %}
+    {% comment %}
+      L'estratto parte dal markdown GREZZO (page.content non e' ancora HTML in questo punto): tolgo i
+      simboli markdown piu' comuni (* _ # ` > [ ]). LIMITE NOTO: Liquid non ha regex, quindi la parte
+      "(url)" di un link [testo](url) resta nel testo. Se la prima frase di una pagina e' un link,
+      l'estratto sara' brutto: in quel caso compilare seo_description a mano (e' per questo che esiste).
+    {% endcomment %}
+    {% assign seo_desc = page.content | strip_html | replace: '[', '' | replace: ']', '' | replace: '*', '' | replace: '_', ' ' | replace: '#', '' | replace: '`', '' | replace: '>', '' %}
+    {% comment %} normalize_whitespace trasforma a-capo e spazi multipli in UNO spazio. NON usare strip_newlines qui: toglie l'a-capo senza mettere spazio e incolla le parole ("IntroQuesto"). {% endcomment %}
+    {% assign seo_desc = seo_desc | normalize_whitespace | strip | truncate: 155 %}
+  {% endif %}
+{% endif %}
+{% if seo_desc == null or seo_desc == '' %}{% assign seo_desc = site.description %}{% endif %}
+{% assign seo_desc = seo_desc | strip_html | normalize_whitespace | strip | escape %}
+{% assign seo_ttl = page.seo_title %}
+{% if seo_ttl %}{% assign seo_ttl = seo_ttl | replace: '{title}', site.title %}{% endif %}
+
+{% if site.enable_google_verification or site.enable_bing_verification %}
+  <!-- Website verification -->
+  {% if site.enable_google_verification %}
+    <meta name="google-site-verification" content="{{ site.google_site_verification }}">
+  {% endif %}
+  {% if site.enable_bing_verification %}
+    <meta name="msvalidate.01" content="{{ site.bing_site_verification }}">
+  {% endif %}
+  <!--
+    Avoid warning on Google Chrome Error with Permissions-Policy header:
+    Origin trial controlled feature not enabled: 'interest-cohort'.
+    see https://stackoverflow.com/a/75119417
+  -->
+  <meta http-equiv="Permissions-Policy" content="interest-cohort=()">
+{% endif %}
+
+{% capture author_name %}{% if site.title and site.title != 'blank' %}{{ site.title }}{% else %}{{ site.first_name }}{% if site.middle_name %} {{ site.middle_name }}{% endif %} {{ site.last_name }}{% endif %}{% endcapture %}
+
+<!-- Standard metadata -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>
+  {% if site.title == 'blank' %}
+    {% capture title %}{{ author_name }}{% endcapture %}
+  {% else %}
+    {% capture title %}{{ site.title }}{% endcapture %}
+  {% endif %}
+  {% if seo_ttl and seo_ttl != '' %}
+    {{ seo_ttl | escape }}
+  {% elsif page.url == '/blog/index.html' %}
+    {{ page.title }} | {{ title }}
+  {% elsif page.title != 'blank' and page.url != '/' %}
+    {% if page.title == null or page.title == '' %}
+      {{ page.date | date: '%Y' }} | {{ title }}
+    {% else %}
+      {{ page.title }} | {{ title }}
+    {% endif %}
+  {% else %}
+    {{ title }}
+  {% endif %}
+</title>
+<meta name="author" content="{{ author_name }}">
+<meta name="description" content="{{ seo_desc }}">
+{% comment %} SEO strutturato: variabili usate da OpenGraph e schema.org (il canonical lo emette head.liquid della gem). Nessun URL scritto qui: la sezione (es. /servizi/) viene da permalink_per_categoria in _config.yml. {% endcomment %}
+{% assign seo_canonical = page.url | absolute_url | remove_first: 'index.html' %}
+{% assign is_post = false %}
+{% if page.collection == 'posts' %}{% assign is_post = true %}{% endif %}
+{% comment %} I servizi sono la collection 'servizi' (non piu' post con categoria): is_service = pagina di quella collection. {% endcomment %}
+{% assign is_service = false %}
+{% if page.collection == 'servizi' %}{% assign is_service = true %}{% endif %}
+{% assign seo_section = '' %}
+{% assign seo_section_url = '' %}
+{% if is_service %}
+  {% assign seo_section = 'Servizi' %}
+  {% assign seo_section_url = '/servizi/' | absolute_url %}
+{% elsif is_post %}
+  {% assign seo_cat = page.categories | first %}
+  {% assign seo_rule = site.permalink_per_categoria[seo_cat] %}
+  {% if seo_rule %}
+    {% assign seo_section = seo_cat | capitalize %}
+    {% assign seo_section_url = seo_rule | remove: ':title/' | absolute_url %}
+  {% endif %}
+{% endif %}
+{% if page.keywords or site.keywords %}
+  <meta name="keywords" content="{% if page.keywords %}{{ page.keywords }}{% else %}{{ site.keywords }}{% endif %}">
+{% endif %}
+
+{% assign is_blog_post = false %}
+{% if page.url != '/blog/index.html' and page.url contains '/blog/' %}
+  {% unless page.url contains '/tag/' or page.url contains '/category/' %}
+    {% assign is_blog_post = true %}
+  {% endunless %}
+{% endif %}
+
+{% if site.serve_og_meta %}
+  <!-- OpenGraph -->
+  <meta property="og:site_name" content="{{ title }}">
+  <meta property="og:type" content="{% if is_post and is_service == false %}article{% else %}website{% endif %}">
+  <meta property="og:title" content="{% if seo_ttl and seo_ttl != '' %}{{ seo_ttl | escape }}{% elsif page.title %}{{ title | strip }} | {{ page.title }}{% else %}{{ title | strip }}{% endif %}">
+  <meta property="og:url" content="{{ page.url | prepend: site.baseurl | prepend: site.url | remove_first: 'index.html' }}">
+  <meta property="og:description" content="{{ seo_desc }}">
+  {% if page.og_image or site.og_image %}
+    {% assign og_image_source = page.og_image | default: site.og_image %}
+    {% if og_image_source contains '://' %}
+      {% assign og_image_url = og_image_source %}
+    {% else %}
+      {% assign og_image_url = og_image_source | prepend: site.baseurl | prepend: site.url %}
+    {% endif %}
+    <meta property="og:image" content="{{ og_image_url }}">
+  {% endif %}
+  <meta property="og:locale" content="{% if site.lang == 'it' %}it_IT{% elsif site.lang == 'en' %}en_US{% else %}{{ site.lang }}{% endif %}">
+  {% if is_post %}
+    <meta property="article:published_time" content="{{ page.date | date_to_xmlschema }}">
+  {% endif %}
+
+  <!-- Twitter card -->
+  <meta name="twitter:card" content="{% if page.og_image or site.og_image %}summary_large_image{% else %}summary{% endif %}">
+  <meta name="twitter:title" content="{% if seo_ttl and seo_ttl != '' %}{{ seo_ttl | escape }}{% elsif page.title %}{{ page.title }}{% else %}{{ title }}{% endif %}">
+  <meta name="twitter:description" content="{{ seo_desc }}">
+  {% if page.og_image or site.og_image %}
+    <meta name="twitter:image" content="{{ og_image_url }}">
+  {% endif %}
+  {% if site.x_username %}
+    <meta name="twitter:site" content="@{{ site.x_username }}">
+    <meta name="twitter:creator" content="@{{ site.x_username }}">
+  {% endif %}
+{% endif %}
+
+{% if site.serve_schema_org %}
+  <!-- Schema.org -->
+  {% comment %}
+    Un solo @graph. Dati azienda SOLO da _config.yml > schema_org; i campi vuoti NON vengono emessi (niente dati inventati).
+    Nodi: Organization + WebSite (su ogni pagina, @id fissi); poi UNO tra Service (pagine della collection 'servizi', is_service: NON dipende dalla categoria; se cambi la collection aggiorna is_service qui sopra),
+    BlogPosting (altri post) e WebPage; poi BreadcrumbList (non in home). Ordine dei campi: prima gli opzionali (con virgola
+    finale), per ultimi quelli sempre presenti: cosi' il JSON resta valido qualunque campo sia vuoto.
+  {% endcomment %}
+  {% assign so = site.schema_org %}
+  {% assign ld_root = '/' | absolute_url %}
+  {% assign ld_org_name = so.name | default: title | strip %}
+  {% assign ld_org_id = ld_root | append: '#organization' %}
+  {% assign ld_site_id = ld_root | append: '#website' %}
+  {% assign ld_desc = seo_desc | replace: '&amp;', '&' | replace: '&quot;', '"' | replace: '&#39;', "'" | replace: '&lt;', '<' | replace: '&gt;', '>' %}
+  {% assign ld_name = page.title %}
+  {% if ld_name == nil or ld_name == '' or ld_name == 'blank' %}{% assign ld_name = ld_org_name %}{% endif %}
+  {% assign ld_org_type = so.type %}
+  {% if ld_org_type == nil or ld_org_type == '' %}
+    {% if so.street %}{% assign ld_org_type = 'LocalBusiness' %}{% else %}{% assign ld_org_type = 'Organization' %}{% endif %}
+  {% endif %}
+  {% assign ld_logo = so.logo %}
+  {% if ld_logo %}{% unless ld_logo contains '://' %}{% assign ld_logo = ld_logo | absolute_url %}{% endunless %}{% endif %}
+  {% assign ld_img = page.og_image | default: site.og_image %}
+  {% if ld_img %}{% unless ld_img contains '://' %}{% assign ld_img = ld_img | absolute_url %}{% endunless %}{% endif %}
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        {% if ld_logo %}"logo": {{ ld_logo | jsonify }},{% endif %}
+        {% if so.telephone %}"telephone": {{ so.telephone | jsonify }},{% endif %}
+        {% if so.email %}"email": {{ so.email | jsonify }},{% endif %}
+        {% if so.street or so.city or so.postal_code %}
+        "address": {
+          {% if so.street %}"streetAddress": {{ so.street | jsonify }},{% endif %}
+          {% if so.city %}"addressLocality": {{ so.city | jsonify }},{% endif %}
+          {% if so.region %}"addressRegion": {{ so.region | jsonify }},{% endif %}
+          {% if so.postal_code %}"postalCode": {{ so.postal_code | jsonify }},{% endif %}
+          {% if so.country %}"addressCountry": {{ so.country | jsonify }},{% endif %}
+          "@type": "PostalAddress"
+        },
+        {% endif %}
+        {% if so.area_served %}"areaServed": {{ so.area_served | jsonify }},{% endif %}
+        {% if so.same_as and so.same_as.size > 0 %}"sameAs": {{ so.same_as | jsonify }},{% endif %}
+        "@type": {{ ld_org_type | jsonify }},
+        "@id": {{ ld_org_id | jsonify }},
+        "name": {{ ld_org_name | jsonify }},
+        "url": {{ ld_root | jsonify }}
+      },
+      {
+        "@type": "WebSite",
+        "@id": {{ ld_site_id | jsonify }},
+        "url": {{ ld_root | jsonify }},
+        "name": {{ ld_org_name | jsonify }},
+        "inLanguage": {{ site.lang | default: 'it' | jsonify }},
+        "publisher": { "@id": {{ ld_org_id | jsonify }} }
+      },
+      {% if is_service %}
+      {
+        {% if so.area_served %}"areaServed": {{ so.area_served | jsonify }},{% endif %}
+        "@type": "Service",
+        "@id": {{ seo_canonical | append: '#service' | jsonify }},
+        "name": {{ ld_name | jsonify }},
+        "serviceType": {{ ld_name | jsonify }},
+        "description": {{ ld_desc | jsonify }},
+        "url": {{ seo_canonical | jsonify }},
+        "mainEntityOfPage": {{ seo_canonical | jsonify }},
+        "provider": { "@id": {{ ld_org_id | jsonify }} }
+      }
+      {% elsif is_post %}
+      {
+        {% if ld_img %}"image": {{ ld_img | jsonify }},{% endif %}
+        "@type": "BlogPosting",
+        "@id": {{ seo_canonical | append: '#article' | jsonify }},
+        "headline": {{ ld_name | jsonify }},
+        "description": {{ ld_desc | jsonify }},
+        "url": {{ seo_canonical | jsonify }},
+        "mainEntityOfPage": { "@type": "WebPage", "@id": {{ seo_canonical | jsonify }} },
+        "datePublished": {{ page.date | date_to_xmlschema | jsonify }},
+        "dateModified": {{ page.last_modified_at | default: page.date | date_to_xmlschema | jsonify }},
+        "inLanguage": {{ site.lang | default: 'it' | jsonify }},
+        "author": { "@id": {{ ld_org_id | jsonify }} },
+        "publisher": { "@id": {{ ld_org_id | jsonify }} }
+      }
+      {% else %}
+      {
+        "@type": "WebPage",
+        "@id": {{ seo_canonical | append: '#webpage' | jsonify }},
+        "url": {{ seo_canonical | jsonify }},
+        "name": {{ ld_name | jsonify }},
+        "description": {{ ld_desc | jsonify }},
+        "inLanguage": {{ site.lang | default: 'it' | jsonify }},
+        "isPartOf": { "@id": {{ ld_site_id | jsonify }} }
+      }
+      {% endif %}
+      {% if page.url != '/' and page.url != '/index.html' %}
+      ,{
+        "@type": "BreadcrumbList",
+        "@id": {{ seo_canonical | append: '#breadcrumb' | jsonify }},
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": {{ ld_root | jsonify }} },
+          {% if seo_section != '' %}
+          { "@type": "ListItem", "position": 2, "name": {{ seo_section | jsonify }}, "item": {{ seo_section_url | jsonify }} },
+          { "@type": "ListItem", "position": 3, "name": {{ ld_name | jsonify }}, "item": {{ seo_canonical | jsonify }} }
+          {% elsif is_post %}
+          { "@type": "ListItem", "position": 2, "name": "Blog", "item": {{ '/blog/' | absolute_url | jsonify }} },
+          { "@type": "ListItem", "position": 3, "name": {{ ld_name | jsonify }}, "item": {{ seo_canonical | jsonify }} }
+          {% else %}
+          { "@type": "ListItem", "position": 2, "name": {{ ld_name | jsonify }}, "item": {{ seo_canonical | jsonify }} }
+          {% endif %}
+        ]
+      }
+      {% endif %}
+    ]
+  }
+  </script>
+{% endif %}
+
+{% comment %} MODULI: aggancio 'head' (CSS/JS dei moduli attivi). Vedi modules_hook.liquid. Se togli questa riga i moduli con hook head non caricano piu' nulla. {% endcomment %}
+{% include modules_hook.liquid hook='head' %}

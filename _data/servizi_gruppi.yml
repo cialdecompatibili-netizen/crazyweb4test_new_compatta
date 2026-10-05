@@ -1,0 +1,12 @@
+# Sezioni della pagina /servizi/, NELL'ORDINE in cui compaiono. Ogni servizio ha 'gruppo: <nome esatto>' nel front matter
+# (si sceglie da admin > Servizi). Un servizio con gruppo vuoto o non elencato qui finisce in 'Altri servizi'.
+# Se rinomini una sezione, aggiorna anche il campo gruppo dei servizi che la usano.
+- "Strategia e consulenza"
+- "SEO, GEO e visibilità"
+- "Advertising (PPC)"
+- "Social e contenuti"
+- "Design e brand"
+- "Sviluppo web"
+- "Software e applicazioni"
+- "AI e automazione"
+- "Settori verticali"

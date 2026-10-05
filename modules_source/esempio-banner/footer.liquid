@@ -1,0 +1,12 @@
+{% comment %}
+  Modulo di esempio: mostra come si scrive un modulo per il sistema hook (vedi admin/claude.md sez. 11
+  e admin/admin-modules.js). Riceve include.slug, include.assets_url, include.data (da modules_hook.liquid).
+  include.data = contenuto di _data/modules/<slug>.yml, scritto dal bottone Configura (config_fields del
+  module.json). Se la configurazione non e' mai stata salvata include.data e' vuoto: qui si usano i default.
+  z-index 1040: sopra footer fixed-bottom e bottoni flottanti del tema (1031), vedi claude.md sez. 7.
+{% endcomment %}
+{%- assign bn_text = include.data.text | default: "Modulo di esempio attivo - installato dall'admin, sezione Moduli." -%}
+{%- assign bn_color = include.data.color | default: "#2271b1" -%}
+<div style="position:fixed;left:0;right:0;bottom:0;z-index:1040;background:{{ bn_color }};color:#fff;text-align:center;padding:6px;font-size:13px;">
+  {{ bn_text }}
+</div>

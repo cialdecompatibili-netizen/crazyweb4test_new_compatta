@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin</title>
+<link rel="stylesheet" href="admin.css?v=202610050020">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login" class="login">
+  <div class="login-box">
+    <h1>Admin</h1>
+    <p>Incolla il tuo token GitHub (scope <b>repo</b>). Resta solo in questo browser.</p>
+    <input id="tok" type="password" placeholder="ghp_...">
+    <input id="repo" type="text" placeholder="utente/repo">
+    <button class="btn primary" onclick="A.login()">Entra</button>
+    <div id="loginMsg" class="msg"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="app" style="display:none">
+  <div class="topbar">
+    <button class="burger" onclick="A.toggleMenu()" aria-label="Menu">&#9776;</button>
+    <b id="topRepo" class="repochip" title="Repository su cui stai lavorando"></b>
+    <span id="topTitle">Bacheca</span>
+    <a id="siteLink" class="tlink" href="#" target="_blank" rel="noopener">&#8599; Sito</a>
+    <a id="deployLink" class="tlink" href="#" target="_blank" rel="noopener">&#9881; Deploy</a>
+    <span id="deployTxt" class="dtxt">--</span>
+    <span id="deployDot" class="dot" title="Deploy"></span>
+    <div id="deployBar" class="dbar"></div>
+  </div>
+  <nav id="side" class="side">
+    <div class="brand">Admin <small id="repoName"></small></div>
+    <a data-p="dash" onclick="A.go('dash')">&#9962; Bacheca</a>
+    <div class="grp" data-g="contenuti"><button type="button" class="gh" aria-expanded="true">Contenuti</button><div class="gb">
+      <a data-p="posts" onclick="A.go('posts')">&#9998; Articoli</a>
+      <a data-p="cats" onclick="A.go('cats')">&#9776; Categorie articoli</a>
+      <a data-p="pages" onclick="A.go('pages')">&#9636; Pagine</a>
+      <a data-p="projects" onclick="A.go('projects')">&#9733; Progetti</a>
+      <a data-p="news" class="off" title="Temporaneamente disattivato">&#9993; News <small>(disattivato)</small></a><!-- RIATTIVARE: togli class="off", rimetti onclick="A.go('news')" e togli 'news' da off in admin.js -->
+      <a data-p="servizi" onclick="A.go('servizi')">&#9776; Servizi</a>
+    </div></div>
+    <div class="grp" data-g="media"><button type="button" class="gh" aria-expanded="true">Media</button><div class="gb">
+      <a data-p="gallerie" onclick="A.go('gallerie')">&#9638; Gallerie</a>
+      <a data-p="media" onclick="A.go('media')">&#9635; Immagini</a>
+    </div></div>
+    <div class="grp" data-g="sito"><button type="button" class="gh" aria-expanded="true">Sito</button><div class="gb">
+      <a data-p="menu" onclick="A.go('menu')">&#9776; Menu</a>
+      <a data-p="tema" onclick="A.go('tema')">&#9788; Tema</a>
+      <a data-p="modules" onclick="A.go('modules')">&#9881; Moduli</a>
+      <a data-p="messaggi" onclick="A.go('messaggi')">&#9993; Messaggi</a>
+      <a data-p="settings" onclick="A.go('settings')">&#9881; Impostazioni</a>
+    </div></div>
+    <div class="grp" data-g="sicurezza"><button type="button" class="gh" aria-expanded="true">Sicurezza</button><div class="gb">
+      <a data-p="cestino" onclick="A.go('cestino')">&#128465; Cestino</a>
+      <a data-p="backup" onclick="A.go('backup')">&#8634; Backup</a>
+    </div></div>
+    <a onclick="A.logout()" class="out">&#10162; Esci</a>
+  </nav>
+  <main id="main" class="main"></main>
+</div>
+<div id="toast" class="toast"></div>
+<div id="overlay" class="overlay" onclick="A.toggleMenu(false)"></div>
+
+<script src="admin.js?v=202610050020"></script>
+<script src="admin-views.js?v=202610051400"></script>
+<script src="admin-categories.js?v=202610042330"></script>
+<script src="admin-menu.js?v=202610032108"></script>
+<script src="admin-media.js?v=202610051400"></script>
+<script src="admin-tema.js?v=202610040456"></script>
+<script src="admin-gallerie.js?v=202610042330"></script>
+<script src="admin-backup.js?v=202610042330"></script>
+<script src="admin-cestino.js?v=202610042330"></script>
+<script src="admin-bulk.js?v=202610042330"></script>
+<script src="admin-modules.js?v=202610042154"></script>
+<script src="admin-gruppi.js?v=202610050001"></script>
+</body>
+</html>

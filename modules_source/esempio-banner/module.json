@@ -1,0 +1,10 @@
+{
+  "name": "Banner di esempio",
+  "hooks": {
+    "footer": "footer.liquid"
+  },
+  "config_fields": [
+    { "key": "text", "type": "text", "label": "Testo del banner", "default": "Modulo di esempio attivo - installato dall'admin, sezione Moduli." },
+    { "key": "color", "type": "text", "label": "Colore di sfondo (es. #2271b1)", "default": "#2271b1" }
+  ]
+}
