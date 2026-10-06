@@ -6,6 +6,7 @@ description: primo articolo senza categoriaprimo articolo senza categoriaprimo a
 categories: senza-categoria
 toc:
   beginning: true
+thumbnail: assets/img/prof_pic.jpg
 ---
 
 primo articolo senza categoria
