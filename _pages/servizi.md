@@ -6,15 +6,19 @@ permalink: /servizi/
 ---
 
 <style>
-.srv-t{width:100%;border-collapse:separate;border-spacing:8px;margin:6px 0 26px}
-.srv-t td{width:33.33%;padding:9px 12px;border:1px solid rgba(0,0,0,.12);border-radius:10px;background:#fffdf5;font-size:.9rem;line-height:1.3;vertical-align:top}
-.srv-t td small{display:block;opacity:.65}
-.srv-t td:empty{background:none;border:0}
+/* CARD BIANCHE (stesso stile delle card "Perche' su fune" di Italfuni, ma SENZA icona): fondo bianco FISSO anche in tema scuro, testo scuro fisso, bordo sottile, angoli 22px,
+   ombra morbida a due strati, leggero sollevamento all'hover. Stesso identico stile in home (.srv-home-card, .prj-home-card) e in /projects/ (.projects .card): se lo ritocchi, ritoccali tutti e tre. */
+.srv-t{width:100%;border-collapse:separate;border-spacing:16px;margin:6px 0 26px}
+.srv-t td{width:33.33%;padding:18px 22px;min-height:112px;background:#fff;color:#1f2933;border:1px solid #e6e8ec;border-radius:22px;box-shadow:0 1px 2px rgba(16,24,40,.04),0 8px 24px -12px rgba(16,24,40,.12);font-size:.94rem;line-height:1.5;vertical-align:middle;transition:transform .25s ease,box-shadow .25s ease}
+.srv-t td:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(16,24,40,.05),0 16px 32px -14px rgba(16,24,40,.2)}
+.srv-t td small{display:block;color:#3a4552}
+.srv-t td:empty{background:none;border:0;box-shadow:none}
+.srv-t td:empty:hover{transform:none;box-shadow:none}
 .srv-t td{position:relative}
-.srv-t td a{color:inherit;text-decoration:none}
-.srv-t td a::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:10px}
-html[data-theme="dark"] .srv-t td{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.15)}
-@media(max-width:600px){.srv-t,.srv-t tbody,.srv-t tr,.srv-t td{display:block;width:100%}.srv-t{border-spacing:0}.srv-t td{margin-bottom:6px}.srv-t td:empty{display:none}}
+.srv-t td a{color:#111827;font-weight:600;text-decoration:none}
+.srv-t td a::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:22px}
+@media(max-width:600px){.srv-t,.srv-t tbody,.srv-t tr,.srv-t td{display:block;width:100%}.srv-t{border-spacing:0}.srv-t td{margin-bottom:12px;min-height:0}.srv-t td:empty{display:none}}
+@media (prefers-reduced-motion:reduce){.srv-t td{transition:none}.srv-t td:hover{transform:none}}
 </style>
 {% comment -%}
   PAGINA SERVIZI DINAMICA. Non si modifica a mano: l'elenco nasce dai file di _servizi/ (admin > Servizi).
