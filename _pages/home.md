@@ -38,36 +38,40 @@ html[data-theme=dark] .rete-box .marte{opacity:.66;box-shadow:0 0 34px 10px rgba
 /* ===== MARTE END (css) ===== */
 
 /* ===== SERVIZI HOME (nuova sezione, sotto il box costellazione) =====
-   Semplice griglia di 6 card che riprendono i PRIMI 6 servizi di _pages/servizi.md,
-   con link "Vedi tutti i servizi" verso /servizi/. Nessun altro blocco esistente toccato.
+   Griglia di card che riprendono i servizi con la casetta, con link "Vedi tutti i servizi" verso /servizi/.
+   CARD BIANCHE (stesso stile delle card "Perche' su fune" di Italfuni, ma SENZA icona): fondo bianco FISSO anche in tema scuro, testo scuro fisso, bordo sottile,
+   angoli 22px, ombra morbida a due strati, leggero sollevamento all'hover. Stesso identico stile in /servizi/ (.srv-t td) e /projects/ (.projects .card): se lo ritocchi, ritoccali tutti e tre.
    Per aggiungere/rimuovere una card: duplica/elimina un .srv-home-card qui sotto e nell'HTML. */
 .srv-home{margin:2.5rem 0}
 .srv-home h2{text-align:center;margin-bottom:1.4rem}
-.srv-home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:900px;margin:0 auto}
-.srv-home-card{display:block;color:inherit;text-decoration:none;padding:16px 18px;border:1px solid rgba(0,0,0,.12);border-radius:12px;background:#fffdf5;text-align:left}
-.srv-home-card b{display:block;margin-bottom:4px}
-.srv-home-card small{opacity:.65;display:block}
-html[data-theme="dark"] .srv-home-card{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.15)}
+.srv-home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:900px;margin:0 auto;align-items:stretch}
+.srv-home-card{display:flex;flex-direction:column;justify-content:center;color:#1f2933;text-decoration:none;padding:18px 22px;min-height:112px;background:#fff;border:1px solid #e6e8ec;border-radius:22px;box-shadow:0 1px 2px rgba(16,24,40,.04),0 8px 24px -12px rgba(16,24,40,.12);text-align:left;transition:transform .25s ease,box-shadow .25s ease}
+.srv-home-card:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(16,24,40,.05),0 16px 32px -14px rgba(16,24,40,.2)}
+.srv-home-card b{display:block;margin-bottom:4px;color:#111827}
+.srv-home-card small{display:block;color:#3a4552;font-size:.94rem;line-height:1.5;text-wrap:pretty}
 .srv-home-more{text-align:center;margin-top:1.6rem}
 .srv-home-more a{display:inline-block;padding:.55rem 1.4rem;border-radius:999px;border:1px solid rgba(0,0,0,.2);text-decoration:none;font-weight:600}
 html[data-theme="dark"] .srv-home-more a{border-color:rgba(255,255,255,.3)}
-@media (max-width:700px){.srv-home-grid{grid-template-columns:1fr}}
+@media (max-width:900px){.srv-home-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:600px){.srv-home-grid{grid-template-columns:1fr}.srv-home-card{min-height:0}}
+@media (prefers-reduced-motion:reduce){.srv-home-card,.prj-home-card{transition:none}.srv-home-card:hover,.prj-home-card:hover{transform:none}}
 
 /* ===== PROGETTI HOME (sotto i servizi) =====
-   Stesso aspetto della griglia servizi, classi separate (prj-home*) di proposito: gli script che riallineano le card
+   Stesso aspetto delle card dei servizi (bianche, senza icone), classi separate (prj-home*) di proposito: gli script che riallineano le card
    dei servizi (pubblica_servizi.py) lavorano su .srv-home-card e non devono mai toccare queste.
    Le card NON sono scritte a mano: le genera il ciclo Liquid nell'HTML qui sotto dai file di _projects/. */
 .prj-home{margin:2.5rem 0}
 .prj-home h2{text-align:center;margin-bottom:1.4rem}
-.prj-home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:900px;margin:0 auto}
-.prj-home-card{display:block;color:inherit;text-decoration:none;padding:16px 18px;border:1px solid rgba(0,0,0,.12);border-radius:12px;background:#fffdf5;text-align:left}
-.prj-home-card b{display:block;margin-bottom:4px}
-.prj-home-card small{opacity:.65;display:block}
-html[data-theme="dark"] .prj-home-card{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.15)}
+.prj-home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:900px;margin:0 auto;align-items:stretch}
+.prj-home-card{display:flex;flex-direction:column;justify-content:center;color:#1f2933;text-decoration:none;padding:18px 22px;min-height:112px;background:#fff;border:1px solid #e6e8ec;border-radius:22px;box-shadow:0 1px 2px rgba(16,24,40,.04),0 8px 24px -12px rgba(16,24,40,.12);text-align:left;transition:transform .25s ease,box-shadow .25s ease}
+.prj-home-card:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(16,24,40,.05),0 16px 32px -14px rgba(16,24,40,.2)}
+.prj-home-card b{display:block;margin-bottom:4px;color:#111827}
+.prj-home-card small{display:block;color:#3a4552;font-size:.94rem;line-height:1.5;text-wrap:pretty}
 .prj-home-more{text-align:center;margin-top:1.6rem}
 .prj-home-more a{display:inline-block;padding:.55rem 1.4rem;border-radius:999px;border:1px solid rgba(0,0,0,.2);text-decoration:none;font-weight:600}
 html[data-theme="dark"] .prj-home-more a{border-color:rgba(255,255,255,.3)}
-@media (max-width:700px){.prj-home-grid{grid-template-columns:1fr}}
+@media (max-width:900px){.prj-home-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:600px){.prj-home-grid{grid-template-columns:1fr}.prj-home-card{min-height:0}}
 </style>
 
 <div class="rete-box" id="rete-box" markdown="1">
